@@ -1,0 +1,68 @@
+const {encode, encodeMac} = require("./AESCrypto");
+
+function postRestApi(data) {
+    let head = {
+        "to": "/topics/" + global.globalOption.pairingKey,
+        "priority": "high",
+        "data": data
+    }
+
+    if (global.globalOption.encryptionEnabled && global.globalOption.encryptionPassword !== "") {
+        let isFirstFetch = data.type === "pair|request_device_list"
+
+        if(global.globalOption.authWithHMac) {
+            let hashKey = isFirstFetch ? global.globalOption.pairingKey : data.send_device_id
+            encodeMac(JSON.stringify(data), global.globalOption.encryptionPassword, hashKey).then((encoded) => {
+                if(encoded != null) {
+                    let newData = {};
+                    newData.encrypted = true
+                    newData.encrypted_data = encoded
+                    newData.is_first_fetch = isFirstFetch
+                    if(!isFirstFetch) newData.send_device_name = data.send_device_name
+                    head.data = newData;
+                    postRestApiWithTopic(head)
+                }
+            })
+        } else {
+            encode(JSON.stringify(data), global.globalOption.encryptionPassword).then((encoded) => {
+                if(encoded != null) {
+                    let newData = {};
+                    newData.encrypted = true
+                    newData.encrypted_data = encoded
+                    newData.is_first_fetch = isFirstFetch
+                    if(!isFirstFetch) newData.send_device_name = data.send_device_name
+                    head.data = newData;
+                    postRestApiWithTopic(head)
+                }
+            })
+        }
+    } else {
+        head.data.encrypted = false
+        postRestApiWithTopic(head)
+    }
+}
+
+function postRestApiWithTopic(data) {
+    const FCM_API = "https://fcm.googleapis.com/fcm/send";
+    const serverKey = global.globalOption.serverKey
+    const contentType = "application/json";
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", FCM_API)
+
+    xhr.setRequestHeader("Authorization", serverKey)
+    xhr.setRequestHeader("Content-Type", contentType)
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && global.globalOption.printDebugLog) {
+            console.log(xhr.status + " "  + xhr.responseText)
+        }
+    };
+
+    data.topic = global.globalOption.pairingKey
+    xhr.send(JSON.stringify(data))
+}
+
+module.exports = {
+    postRestApi
+}

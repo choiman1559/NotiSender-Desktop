@@ -1,0 +1,14 @@
+{
+  "name": "syncprotocol",
+  "version": "0.2.2",
+  "main": "src/index.js",
+  "author": "Choiman1559",
+  "license": "LGPL-2.1",
+  "type": "commonjs",
+  "dependencies": {
+    "electron": "^19.0.9",
+    "electron-config": "^1.0.0",
+    "electron-push-receiver": "^2.1.3",
+    "electron-store": "^8.1.0"
+  }
+}
