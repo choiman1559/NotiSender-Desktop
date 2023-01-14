@@ -10,20 +10,13 @@ const {
 } = require("./ProcessUtil");
 
 function onMessageReceived(data) {
-    if(data.topic !== global.globalOption.pairingKey) return;
+    //if(data.topic !== global.globalOption.pairingKey) return;
     if(data.encrypted === "true") {
         if(global.globalOption.encryptionEnabled && global.globalOption.encryptionPassword != null) {
-            if(data.is_first_fetch === "false" && !data.send_device_name === global.globalOption.deviceName) return
-            if(global.globalOption.authWithHMac) {
-                let hash = data.is_first_fetch === "true" ? global.globalOption.pairingKey : global.globalOption.identifierValue
-                decodeMac(data.encrypted_data, global.globalOption.encryptionPassword, hash).then(decodedData => {
-                    if(decodedData !== "") onMessageReceived(JSON.parse(decodedData.toString()))
-                });
-            } else {
-                decode(data.encrypted_data, global.globalOption.encryptionPassword).then(decodedData => {
-                    onMessageReceived(JSON.parse(decodedData.toString()))
-                });
-            }
+            if(!data.send_device_name === global.globalOption.deviceName) return
+            decode(data.encryptedData, global.globalOption.encryptionPassword).then(decodedData => {
+                onMessageReceived(JSON.parse(decodedData.toString()))
+            });
         }
     } else processReception(data)
 }

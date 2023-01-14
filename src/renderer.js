@@ -365,3 +365,9 @@ ipcRenderer.on("login_complete", (event, token) => {
         createToastNotification('Login failed: ' + errorMessage, 'Okay')
     });
 })
+
+ipcRenderer.on("open_screen", (event, screenType) => {
+    switch (screenType) {
+
+    }
+});

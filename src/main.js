@@ -61,11 +61,13 @@ function createWindow() {
         {
             label: 'Open NotiSender', click: function () {
                 mainWindow.show()
+                mainWindow.webContents.send("open_screen", "main");
             }
         },
         {
             label: 'Remote Action', click: function () {
                 mainWindow.show()
+                mainWindow.webContents.send("open_screen", "sub");
             }
         },
         {

@@ -8,34 +8,15 @@ function postRestApi(data) {
     }
 
     if (global.globalOption.encryptionEnabled && global.globalOption.encryptionPassword !== "") {
-        let isFirstFetch = data.type === "pair|request_device_list"
-
-        if(global.globalOption.authWithHMac) {
-            let hashKey = isFirstFetch ? global.globalOption.pairingKey : data.send_device_id
-            encodeMac(JSON.stringify(data), global.globalOption.encryptionPassword, hashKey).then((encoded) => {
-                if(encoded != null) {
-                    let newData = {};
-                    newData.encrypted = true
-                    newData.encrypted_data = encoded
-                    newData.is_first_fetch = isFirstFetch
-                    if(!isFirstFetch) newData.send_device_name = data.send_device_name
-                    head.data = newData;
-                    postRestApiWithTopic(head)
-                }
-            })
-        } else {
-            encode(JSON.stringify(data), global.globalOption.encryptionPassword).then((encoded) => {
-                if(encoded != null) {
-                    let newData = {};
-                    newData.encrypted = true
-                    newData.encrypted_data = encoded
-                    newData.is_first_fetch = isFirstFetch
-                    if(!isFirstFetch) newData.send_device_name = data.send_device_name
-                    head.data = newData;
-                    postRestApiWithTopic(head)
-                }
-            })
-        }
+        encode(JSON.stringify(data), global.globalOption.encryptionPassword).then((encoded) => {
+            if(encoded != null) {
+                let newData = {};
+                newData.encrypted = true
+                newData.encryptedData = encoded
+                head.data = newData;
+                postRestApiWithTopic(head)
+            }
+        })
     } else {
         head.data.encrypted = false
         postRestApiWithTopic(head)

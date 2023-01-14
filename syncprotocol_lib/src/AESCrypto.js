@@ -92,45 +92,6 @@ const decrypt = (encoded, TOKEN_KEY) => {
     });
 };
 
-const encryptMac = (plain, TOKEN_KEY, hashKey) => {
-    return new Promise((resolve) => {
-        let iv = crypto.randomBytes(16);
-        let cipher = crypto.createCipheriv('aes-256-cbc', parseAESToken(TOKEN_KEY), iv);
-        let cipherText = Buffer.concat([cipher.update(plain), cipher.final()]);
-
-        let hashCipher = crypto.createHmac('sha256', hashKey)
-        hashCipher.update(iv)
-        hashCipher.update(cipherText)
-        let hashText = hashCipher.digest();
-
-        let ivAndHashText = getCombinedArray(iv, hashText);
-        let finalByteArray = getCombinedArray(ivAndHashText, cipherText)
-        resolve(Buffer.from(finalByteArray).toString('base64'));
-    });
-};
-
-const decryptMac = (encoded, TOKEN_KEY, hashKey) => {
-    return new Promise((resolve) => {
-        let ivAndCipherText = Buffer.from(encoded, 'base64');
-        let iv = ivAndCipherText.slice(0, 16);
-        let hash = ivAndCipherText.slice(16, 48);
-        let cipherText = ivAndCipherText.slice(48);
-
-        let hashCipher = crypto.createHmac('sha256', hashKey)
-        hashCipher.update(iv)
-        hashCipher.update(cipherText)
-        let hashText = hashCipher.digest();
-
-        if(!hashText.equals(hash)) {
-            throw new Error("Could not authenticate! Please check if data is modified by unknown attacker or sent from unpaired (or maybe itself?) device")
-        }
-
-        let decipher = crypto.createDecipheriv('aes-256-cbc', parseAESToken(TOKEN_KEY), iv);
-        let decrypted = Buffer.concat([decipher.update(cipherText), decipher.final()]);
-        resolve(decrypted.toString());
-    });
-};
-
 const encode = async (plain, key) => {
     return compressString(await encrypt(plain, key));
 };
@@ -139,17 +100,7 @@ const decode = async (plain, key) => {
     return decrypt(await decompressString(plain), key);
 };
 
-const encodeMac = async (plain, key, hashKey) => {
-    return compressString(await encryptMac(plain, key, hashKey));
-};
-
-const decodeMac = async (plain, key, hashKey) => {
-    return decryptMac(await decompressString(plain), key, hashKey);
-};
-
 module.exports = {
     encode,
     decode,
-    encodeMac,
-    decodeMac
 };
