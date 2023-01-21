@@ -27,7 +27,6 @@ const {
     requestData,
     requestDeviceListWidely, requestPair
 } = require("syncprotocol/src/ProcessUtil");
-const {Device} = require("syncprotocol/src/Device");
 
 const {
     getBackgroundColor,
@@ -38,6 +37,8 @@ const {
     getEventListener,
     EVENT_TYPE
 } = require("syncprotocol/src/Listener");
+const {Device} = require("syncprotocol/src/Device");
+const {DeviceType, DEVICE_TYPE_UNKNOWN} = require("syncprotocol/src/DeviceType");
 
 const isDesignDebugMode = false
 if (!isDesignDebugMode) init()
@@ -93,11 +94,18 @@ function loadDeviceList() {
 
     for (let i = 0; i < value.length; i++) {
         const arr = value[i].split("|")
-        deviceList.push(new Device(arr[0], arr[1]))
+        let device = new Device(arr[0], arr[1])
+        let deviceType = new DeviceType(DEVICE_TYPE_UNKNOWN)
+        if(arr.length >= 3) {
+            deviceType = new DeviceType(arr[2])
+            device.deviceType = deviceType
+        }
+
+        deviceList.push(device)
         deviceSelect.add(new Option(arr[0]))
         DeviceList.innerHTML += '<li class="mdl-list__item" style="height: 65px">\n' +
             '                     <div class="device_icon_background" style="background-color: ' + getBackgroundColor(arr[0]) + '">\n' +
-            '                           <i class="device_icon_text material-icons" style="color: ' + getForegroundColor(arr[0]) + '">smartphone</i>' +
+            '                           <i class="device_icon_text material-icons" style="color: ' + getForegroundColor(arr[0]) + '">' + deviceType.getMaterialIconString() + '</i>' +
             '                     </div>\n' +
             '                    <span class="mdl-list__item-primary-content">\n' +
             '                       &nbsp;&nbsp;&nbsp;' + arr[0] + '\n' +
@@ -210,7 +218,7 @@ function onDeviceItemClick(index) {
     getElement("battery").innerText = ""
     getElement("deviceTag").innerHTML =
         '                     <div class="device_icon_background" style="background-color: ' + getBackgroundColor(modalSelectedDevice.deviceName) + '">\n' +
-        '                           <i class="device_icon_text material-icons" style="color: ' + getForegroundColor(modalSelectedDevice.deviceName) + '">smartphone</i>' +
+        '                           <i class="device_icon_text material-icons" style="color: ' + getForegroundColor(modalSelectedDevice.deviceName) + '">' + modalSelectedDevice.deviceType.getMaterialIconString() + '</i>' +
         '                    </div><br>\n' +
         '                    <span class="mdl-list__item-primary-content name_style">' + modalSelectedDevice.deviceName + '\n' +
         '                    </span><br>'
@@ -242,9 +250,10 @@ function onAddButtonClick() {
 
     requestDeviceListWidely()
     getEventListener().on(EVENT_TYPE.ON_DEVICE_FOUND, function (device) {
+        let deviceIcon = device.deviceType === undefined ? "devices_other" : new DeviceType(device.deviceType).getMaterialIconString()
         pairModalList.innerHTML += '<li class="mdl-list__item" style="height: 65px" onclick="onPairDeviceItemClick(this.id)" id="pairDevice' + pairDeviceListIndex + '">\n' +
             '                     <div class="device_icon_background" style="background-color: ' + getBackgroundColor(device.deviceName) + '">\n' +
-            '                           <i class="device_icon_text material-icons" style="color: ' + getForegroundColor(device.deviceName) + '">smartphone</i>' +
+            '                           <i class="device_icon_text material-icons" style="color: ' + getForegroundColor(device.deviceName) + '">' + deviceIcon + '</i>' +
             '                     </div>\n' +
             '                    <span class="mdl-list__item-primary-content">\n' +
             '                       &nbsp;' + device.deviceName + '\n' +
