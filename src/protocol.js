@@ -2,7 +2,7 @@ const Protocol = require("syncprotocol");
 const ConnectionOption = require("syncprotocol/src/ConnectionOption");
 const {PairAction} = require("syncprotocol/src/Actions");
 const {responsePairAcceptation, responseDataRequest} = require("syncprotocol/src/ProcessUtil");
-const Device = require("syncprotocol/src/Device");
+const {Device} = require("syncprotocol/src/Device");
 const Store = require('electron-store');
 
 const ipcRenderer = require("electron").ipcRenderer;

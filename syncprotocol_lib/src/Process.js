@@ -1,5 +1,5 @@
-const Device = require("./Device");
-const {decode, decodeMac} = require("./AESCrypto");
+const {Device, parseDevice} = require("./Device");
+const {decode} = require("./AESCrypto");
 const {getEventListener, EVENT_TYPE} = require("./Listener");
 
 const {
@@ -11,9 +11,9 @@ const {
 
 function onMessageReceived(data) {
     //if(data.topic !== global.globalOption.pairingKey) return;
-    if(data.encrypted === "true") {
-        if(global.globalOption.encryptionEnabled && global.globalOption.encryptionPassword != null) {
-            if(!data.send_device_name === global.globalOption.deviceName) return
+    if (data.encrypted === "true") {
+        if (global.globalOption.encryptionEnabled && global.globalOption.encryptionPassword != null) {
+            if (!data.send_device_name === global.globalOption.deviceName) return
             decode(data.encryptedData, global.globalOption.encryptionPassword).then(decodedData => {
                 onMessageReceived(JSON.parse(decodedData.toString()))
             });
@@ -24,7 +24,8 @@ function onMessageReceived(data) {
 function processReception(data) {
     const type = data.type
     const device = new Device(data.device_name, data.device_id)
-    if(global.globalOption.printDebugLog) console.log(type + " " + device.toString())
+    if(data.device_type != null) device.deviceType = data.device_type
+    if (global.globalOption.printDebugLog) console.log(type + " " + device.toString())
 
     if (type != null && global.globalOption.pairingKey !== "") {
         if (type.startsWith("pair") && !isDeviceItself(data)) {
@@ -32,8 +33,8 @@ function processReception(data) {
                 case "pair|request_device_list":
                     //Target Device action
                     //Have to Send this device info Data Now
-                    if (!isPairedDevice(data) || global.globalOption.showAlreadyConnected) {
-                        if(global.pairingProcessList.indexOf(device.toString()) < 0) global.pairingProcessList.push(device.toString());
+                    if (!isPairedDevice(device) || global.globalOption.showAlreadyConnected) {
+                        if (global.pairingProcessList.indexOf(device.toString()) < 0) global.pairingProcessList.push(device.toString());
                         global.isListeningToPair = true;
                         responseDeviceInfoToFinder(device)
                     }
@@ -43,7 +44,7 @@ function processReception(data) {
                     //Request Device Action
                     //Show device list here; give choice to user which device to pair
                     if (global.isFindingDeviceToPair && (!isPairedDevice(device) || global.globalOption.showAlreadyConnected)) {
-                        if(global.pairingProcessList.indexOf(device.toString()) < 0) global.pairingProcessList.push(device.toString());
+                        if (global.pairingProcessList.indexOf(device.toString()) < 0) global.pairingProcessList.push(device.toString());
                         onReceiveDeviceInfo(device)
                     }
                     break;
@@ -74,7 +75,7 @@ function processReception(data) {
                     break;
 
                 case "pair|request_remove":
-                    if(isTargetDevice(data) && isPairedDevice(device) && global.globalOption.allowRemovePairRemotely) {
+                    if (isTargetDevice(data) && isPairedDevice(device) && global.globalOption.allowRemovePairRemotely) {
                         removePairedDevice(device)
                     }
                     break;
@@ -140,13 +141,11 @@ function isTargetDevice(map) {
 }
 
 function isPairedDevice(device) {
-    let dataToFind = device.toString()
     let value = []
-    if(global.store.has("paired_list")) value = JSON.parse(global.store.get("paired_list"))
+    if (global.store.has("paired_list")) value = JSON.parse(global.store.get("paired_list"))
 
-    for (let i = 0;i < value.length; i++) {
-        const str = value[i]
-        if (str === dataToFind) return true;
+    for (let str of value) {
+        if (device.equals(parseDevice(str))) return true;
     }
     return false;
 }

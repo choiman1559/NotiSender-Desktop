@@ -2,6 +2,7 @@ const {ipcRenderer} = require('electron')
 const {onMessageReceived} = require("./Process");
 const Store = require('electron-store');
 const Listener = require('./Listener')
+const {getThisDeviceType} = require('./DeviceType')
 
 const {
     START_NOTIFICATION_SERVICE,
@@ -23,6 +24,7 @@ function initialize(option, action) {
     global.actionListener = action
     global.pairingProcessList = []
     global.store = new Store()
+    global.thisDeviceType = getThisDeviceType()
     Listener.init()
 
     ipcRenderer.on(NOTIFICATION_SERVICE_STARTED, (_, token) => {

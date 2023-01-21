@@ -27,7 +27,7 @@ const {
     requestData,
     requestDeviceListWidely, requestPair
 } = require("syncprotocol/src/ProcessUtil");
-const Device = require("syncprotocol/src/Device");
+const {Device} = require("syncprotocol/src/Device");
 
 const {
     getBackgroundColor,

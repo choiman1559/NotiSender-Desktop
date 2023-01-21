@@ -1,11 +1,13 @@
 const {postRestApi} = require("./PostRequset");
 const {getEventListener, EVENT_TYPE} = require("./Listener");
+const {parseDevice} = require("./Device");
 
 function responseDeviceInfoToFinder(device) {
     let data = {
         "type" : "pair|response_device_list",
         "device_name" : global.globalOption.deviceName,
         "device_id" : global.globalOption.identifierValue,
+        "device_type" : global.thisDeviceType.DEVICE_TYPE,
         "send_device_name" : device.deviceName,
         "send_device_id" : device.deviceId
     }
@@ -36,6 +38,7 @@ function requestPair(device) {
         "type" : "pair|request_pair",
         "device_name" : global.globalOption.deviceName,
         "device_id" : global.globalOption.identifierValue,
+        "device_type" : global.thisDeviceType.DEVICE_TYPE,
         "send_device_name" : device.deviceName,
         "send_device_id" : device.deviceId
     }
@@ -63,17 +66,16 @@ function responsePairAcceptation(device, accept) {
         "type" : "pair|accept_pair",
         "device_name" : global.globalOption.deviceName,
         "device_id" : global.globalOption.identifierValue,
+        "device_type" : global.thisDeviceType.DEVICE_TYPE,
         "send_device_name" : device.deviceName,
         "send_device_id" : device.deviceId,
         "pair_accept" : accept ? "true" : "false"
     }
 
     let isNotRegistered = true;
-    let dataToSave = device.deviceName + "|" + device.deviceId
-
     if(global.store.has("paired_list")) {
         for (let str of JSON.parse(global.store.get("paired_list"))) {
-            if (str === dataToSave) {
+            if (device.equals(parseDevice(str))) {
                 isNotRegistered = false;
                 break;
             }
@@ -82,7 +84,7 @@ function responsePairAcceptation(device, accept) {
 
     if(isNotRegistered) {
         let newData = global.store.has("paired_list") ? JSON.parse(global.store.get("paired_list")) : []
-        newData.push(dataToSave)
+        newData.push(device.toString())
         global.store.set("paired_list", JSON.stringify(newData));
     }
 
@@ -92,10 +94,8 @@ function responsePairAcceptation(device, accept) {
 function checkPairResultAndRegister(map, device) {
     if(map.pair_accept) {
         let isNotRegistered = true;
-        let dataToSave = device.deviceName + "|" + device.deviceId
-
         for (let str of JSON.parse(global.store.get("paired_list"))) {
-            if (str === dataToSave) {
+            if (device.equals(parseDevice(str))) {
                 isNotRegistered = false;
                 break;
             }
@@ -103,7 +103,7 @@ function checkPairResultAndRegister(map, device) {
 
         if(isNotRegistered) {
             let newData = JSON.parse(global.store.get("paired_list"))
-            newData.push(dataToSave)
+            newData.push(device.toString())
             global.store.set("paired_list", JSON.stringify(newData));
         }
 
