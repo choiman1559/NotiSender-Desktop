@@ -120,7 +120,10 @@ function checkPairResultAndRegister(map, device) {
 function removePairedDevice(device) {
     let newData = JSON.parse(global.store.get("paired_list"))
 
-    newData.splice(newData.indexOf(device.toString()), 1)
+    for(let i = 0;i < newData.length; i++) {
+        if(device.equals(parseDevice(newData[i]))) newData.splice(i, 1)
+    }
+
     global.store.set("paired_list", JSON.stringify(newData))
     global.actionListener.onDeviceRemoved(device)
 }

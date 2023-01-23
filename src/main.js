@@ -12,6 +12,8 @@ const {initConfig} = require("syncprotocol/src/Store");
 const {download} = require("electron-dl")
 
 const firebaseConfig = require("./firebase-config.json");
+const {decompressString} = require("syncprotocol/src/AESCrypto");
+const fs = require("fs");
 const ElectronGoogleOAuth2 = require('@getstation/electron-google-oauth2').default;
 const myApiOauth = new ElectronGoogleOAuth2(firebaseConfig.CLIENT_ID, firebaseConfig.CLIENT_SECRET, firebaseConfig.SCOPES_LIST, { successRedirectURL: 'https://google.com' });
 
@@ -61,13 +63,6 @@ function createWindow() {
         {
             label: 'Open NotiSender', click: function () {
                 mainWindow.show()
-                mainWindow.webContents.send("open_screen", "main");
-            }
-        },
-        {
-            label: 'Remote Action', click: function () {
-                mainWindow.show()
-                mainWindow.webContents.send("open_screen", "sub");
             }
         },
         {
@@ -156,6 +151,25 @@ if (!gotTheLock) {
                 store.set("login_token", token)
                 mainWindow.webContents.send("login_complete", token);
             });
+        })
+
+        ipcMain.on("notification_image_required", (event,map) => {
+            const imageRaw = map.icon
+            decompressString(imageRaw).then((decompressed) => {
+                let imagePath = app.getPath('userData') + "/imageCache/"
+                fs.mkdir(imagePath, {recursive : true}, () => {
+                    const imageBuffer = Buffer.from(decompressed, 'base64');
+                    let imageFile = app.getPath('userData') + "/imageCache/" + imageRaw.slice(0, 16) + ".png";
+                    fs.writeFile(imageFile, imageBuffer, {flag: "wx"}, () => {
+                        mainWindow.webContents.send("notification_image_saved", map, imageFile);
+                    });
+                })
+            })
+        })
+
+        ipcMain.on("notification_detail", (event,map) => {
+            mainWindow.show()
+            mainWindow.webContents.send("notification_detail", map);
         })
     })
 }

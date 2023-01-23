@@ -13,7 +13,7 @@ function onMessageReceived(data) {
     //if(data.topic !== global.globalOption.pairingKey) return;
     if (data.encrypted === "true") {
         if (global.globalOption.encryptionEnabled && global.globalOption.encryptionPassword != null) {
-            if (!data.send_device_name === global.globalOption.deviceName) return
+            if (data.type.startsWith("pair") && !data.send_device_name === global.globalOption.deviceName) return
             decode(data.encryptedData, global.globalOption.encryptionPassword).then(decodedData => {
                 onMessageReceived(JSON.parse(decodedData.toString()))
             });
@@ -28,7 +28,7 @@ function processReception(data) {
     if (global.globalOption.printDebugLog) console.log(type + " " + device.toString())
 
     if (type != null && global.globalOption.pairingKey !== "") {
-        if (type.startsWith("pair") && !isDeviceItself(data)) {
+        if (!isDeviceItself(data)) {
             switch (type) {
                 case "pair|request_device_list":
                     //Target Device action
@@ -108,7 +108,9 @@ function processReception(data) {
                     break;
 
                 default:
-                    global.actionListener.onDefaultAction(data);
+                    if(type.startsWith("send") || type.startsWith("reception")) {
+                        global.actionListener.onDefaultAction(data);
+                    }
                     break;
             }
         }

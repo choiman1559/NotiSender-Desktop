@@ -17,7 +17,7 @@ const auth = getAuth();
 const token = getPreferenceValue("login_token", "")
 
 let credential;
-if(token !== "") credential = GoogleAuthProvider.credential(token.id_token);
+if (token !== "") credential = GoogleAuthProvider.credential(token.id_token);
 
 const {
     requestAction,
@@ -96,7 +96,7 @@ function loadDeviceList() {
         const arr = value[i].split("|")
         let device = new Device(arr[0], arr[1])
         let deviceType = new DeviceType(DEVICE_TYPE_UNKNOWN)
-        if(arr.length >= 3) {
+        if (arr.length >= 3) {
             deviceType = new DeviceType(arr[2])
             device.deviceType = deviceType
         }
@@ -250,19 +250,21 @@ function onAddButtonClick() {
 
     requestDeviceListWidely()
     getEventListener().on(EVENT_TYPE.ON_DEVICE_FOUND, function (device) {
-        let deviceIcon = device.deviceType === undefined ? "devices_other" : new DeviceType(device.deviceType).getMaterialIconString()
-        pairModalList.innerHTML += '<li class="mdl-list__item" style="height: 65px" onclick="onPairDeviceItemClick(this.id)" id="pairDevice' + pairDeviceListIndex + '">\n' +
-            '                     <div class="device_icon_background" style="background-color: ' + getBackgroundColor(device.deviceName) + '">\n' +
-            '                           <i class="device_icon_text material-icons" style="color: ' + getForegroundColor(device.deviceName) + '">' + deviceIcon + '</i>' +
-            '                     </div>\n' +
-            '                    <span class="mdl-list__item-primary-content">\n' +
-            '                       &nbsp;' + device.deviceName + '\n' +
-            '                    </span>\n' +
-            '                     <span class="mdl-list__item-secondary-content" id="pairDeviceStatus' + pairDeviceListIndex + '" style="font-size: 12px"></span>\n' +
-            '                </li>'
+        if (pairDeviceList.indexOf(device) === -1) {
+            let deviceIcon = device.deviceType === undefined ? "devices_other" : new DeviceType(device.deviceType).getMaterialIconString()
+            pairModalList.innerHTML += '<li class="mdl-list__item" style="height: 65px" onclick="onPairDeviceItemClick(this.id)" id="pairDevice' + pairDeviceListIndex + '">\n' +
+                '                     <div class="device_icon_background" style="background-color: ' + getBackgroundColor(device.deviceName) + '">\n' +
+                '                           <i class="device_icon_text material-icons" style="color: ' + getForegroundColor(device.deviceName) + '">' + deviceIcon + '</i>' +
+                '                     </div>\n' +
+                '                    <span class="mdl-list__item-primary-content">\n' +
+                '                       &nbsp;' + device.deviceName + '\n' +
+                '                    </span>\n' +
+                '                     <span class="mdl-list__item-secondary-content" id="pairDeviceStatus' + pairDeviceListIndex + '" style="font-size: 12px"></span>\n' +
+                '                </li>'
 
-        pairDeviceList.push(device)
-        pairDeviceListIndex += 1;
+            pairDeviceList.push(device)
+            pairDeviceListIndex += 1;
+        }
     })
 }
 
@@ -323,7 +325,7 @@ function onValueChanged(id, type) {
 
 function initAuth() {
     const isLogin = getPreferenceValue("login_token", "") !== ""
-    if(isLogin) {
+    if (isLogin) {
         LoginInfoTitle.innerText = "Service Enabled"
         LoginInfoDetail.innerText = "Logined as " + getPreferenceValue("userEmail", "")
         LoginButton.innerText = "Logout"
@@ -335,7 +337,7 @@ function initAuth() {
 }
 
 function onAuth() {
-    if(getPreferenceValue("login_token", "") === "") {
+    if (getPreferenceValue("login_token", "") === "") {
         ipcRenderer.send("login_request")
     } else {
         signOut(auth).then(() => {
@@ -375,8 +377,16 @@ ipcRenderer.on("login_complete", (event, token) => {
     });
 })
 
-ipcRenderer.on("open_screen", (event, screenType) => {
-    switch (screenType) {
-
+ipcRenderer.on("notification_detail", (event, map) => {
+    switch (map.type) {
+        case "send|normal":
+            showNotificationDetail(map);
+            break;
+        case "send|sms":
+            showSmsNotificationDetail(map);
+            break;
+        case "send|telecom":
+            showTelecomNotificationDetail(map);
+            break;
     }
 });

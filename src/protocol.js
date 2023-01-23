@@ -15,6 +15,8 @@ const keySender = require('./lib/key-sender')
 const ChildProcess = require('child_process')
 const clipboard = require('electron').clipboard;
 const { getStorage, ref, getDownloadURL } = require("firebase/storage");
+const {decompressString} = require("syncprotocol/src/AESCrypto");
+const fs = require("fs");
 
 const store = new Store()
 function getPreferenceValue(key, defValue) {
@@ -204,6 +206,50 @@ ipcRenderer.on("download_complete", (event, file) => {
         icon: path.join(__dirname, '/res/icon.png'),
     })
 });
+
+function sendNotification(map) {
+    if(map.icon === undefined) {
+        let title = map.title
+        let content = map.message
+
+        let notification = new Notification(title, {
+            body: content,
+            icon: 'image.png',
+        })
+
+        notification.onclick = () => {
+            ipcRenderer.send("notification_detail", map)
+        }
+    } else {
+        ipcRenderer.send("notification_image_required", map)
+    }
+}
+
+ipcRenderer.on("notification_image_saved", (event, map, image) => {
+    let title = map.title
+    let content = map.message
+
+    let notification = new Notification(title, {
+        body: content,
+        icon: image,
+    })
+
+    notification.onshow = () => {
+        fs.rmSync(image)
+    }
+
+    notification.onclick = () => {
+        ipcRenderer.send("notification_detail", map)
+    }
+});
+
+function sendSmsNotification(map) {
+    ipcRenderer.send("notification_detail", map)
+}
+
+function sendTelecomNotification(map) {
+    ipcRenderer.send("notification_detail", map)
+}
 
 module.exports = {
     init,
