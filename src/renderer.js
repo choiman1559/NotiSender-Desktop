@@ -228,15 +228,21 @@ function onClickSubmit() {
                 const pathReference = ref(storage, global.globalOption.pairingKey + '/' + fileName)
                 lastSelectedFilePath = ""
 
-                //if(data.byteLength > 104857600) ...
-                //TODO: add size limit (Maybe 100~200MB?)
-                uploadBytes(pathReference, data).then((_) => {
-                    requestAction(deviceList[deviceSelect.selectedIndex - 1], "Share file", fileName)
-                    new Notification("Upload completed", {
-                        body: "File upload completed: " + fileName + "\nFile will be downloaded on target device automatically",
+                if (data.byteLength <= 104857600) {
+                    uploadBytes(pathReference, data).then((_) => {
+                        requestAction(deviceList[deviceSelect.selectedIndex - 1], "Share file", fileName)
+                        new Notification("Upload completed", {
+                            body: "File upload completed: " + fileName + "\nFile will be downloaded on target device automatically",
+                            icon: path.join(__dirname, '/res/icon.png'),
+                        })
+                    });
+                } else {
+                    new Notification("Upload failed", {
+                        body: "File upload failed: " + fileName + "\nFile is too big to be uploaded, limit is 100MB",
                         icon: path.join(__dirname, '/res/icon.png'),
                     })
-                });
+                }
+
             })
         }
     } else {
