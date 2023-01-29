@@ -4,15 +4,16 @@ const BrowserWindow = electron.BrowserWindow
 const Tray = electron.Tray
 const Menu = electron.Menu
 const ipcMain = electron.ipcMain
+const dialog = electron.dialog
 
 const path = require('path')
 const url = require('url')
 const Store = require('electron-store')
-const {initConfig} = require("syncprotocol/src/Store");
-const {download} = require("electron-dl")
+const { initConfig } = require("syncprotocol/src/Store");
+const { download } = require("electron-dl")
 
 const firebaseConfig = require("./firebase-config.json");
-const {decompressString} = require("syncprotocol/src/AESCrypto");
+const { decompressString } = require("syncprotocol/src/AESCrypto");
 const fs = require("fs");
 const ElectronGoogleOAuth2 = require('@getstation/electron-google-oauth2').default;
 const myApiOauth = new ElectronGoogleOAuth2(firebaseConfig.CLIENT_ID, firebaseConfig.CLIENT_SECRET, firebaseConfig.SCOPES_LIST, { successRedirectURL: 'https://google.com' });
@@ -142,7 +143,7 @@ if (!gotTheLock) {
         })
 
         const refreshToken = store.get("login_token")
-        if(refreshToken !== null) {
+        if (refreshToken !== null) {
             myApiOauth.setTokens({ refresh_token: refreshToken });
         }
 
@@ -153,23 +154,31 @@ if (!gotTheLock) {
             });
         })
 
-        ipcMain.on("notification_image_required", (event,map) => {
+        ipcMain.on("notification_image_required", (event, map) => {
             const imageRaw = map.icon
             decompressString(imageRaw).then((decompressed) => {
                 let imagePath = app.getPath('userData') + "/imageCache/"
-                fs.mkdir(imagePath, {recursive : true}, () => {
+                fs.mkdir(imagePath, { recursive: true }, () => {
                     const imageBuffer = Buffer.from(decompressed, 'base64');
                     let imageFile = app.getPath('userData') + "/imageCache/" + imageRaw.slice(0, 16) + ".png";
-                    fs.writeFile(imageFile, imageBuffer, {flag: "wx"}, () => {
+                    fs.writeFile(imageFile, imageBuffer, { flag: "wx" }, () => {
                         mainWindow.webContents.send("notification_image_saved", map, imageFile);
                     });
                 })
             })
         })
 
-        ipcMain.on("notification_detail", (event,map) => {
+        ipcMain.on("notification_detail", (event, map) => {
             mainWindow.show()
             mainWindow.webContents.send("notification_detail", map);
+        })
+
+        ipcMain.on("file_select_dialog", (event) => {
+            dialog.showOpenDialog({ properties: ['openFile'] }).then(function (response) {
+                if (!response.canceled) {
+                    mainWindow.webContents.send("file_select_dialog_result", response.filePaths[0]);
+                }
+            });
         })
     })
 }

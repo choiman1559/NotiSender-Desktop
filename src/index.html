@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="mdc-typography">
+
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="../node_modules/material-design-lite/material.min.css">
@@ -9,265 +10,280 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <title>NotiSender</title>
 </head>
+
 <body>
 
-<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header
             mdl-layout--fixed-tabs">
-    <header class="mdl-layout__header">
-        <div class="mdl-layout__header-row">
-            <span class="mdl-layout-title">NotiSender</span>
-        </div>
-        <div class="mdl-layout__tab-bar mdl-js-ripple-effect" onclick="onModalCloseClick()">
-            <a href="#fixed-tab-1" class="mdl-layout__tab is-active">Devices</a>
-            <a href="#fixed-tab-2" class="mdl-layout__tab">Actions</a>
-            <a href="#fixed-tab-3" class="mdl-layout__tab">Settings</a>
-        </div>
-    </header>
+        <header class="mdl-layout__header">
+            <div class="mdl-layout__header-row">
+                <span class="mdl-layout-title">NotiSender</span>
+            </div>
+            <div class="mdl-layout__tab-bar mdl-js-ripple-effect" onclick="onModalCloseClick()">
+                <a href="#fixed-tab-1" class="mdl-layout__tab is-active">Devices</a>
+                <a href="#fixed-tab-2" class="mdl-layout__tab">Actions</a>
+                <a href="#fixed-tab-3" class="mdl-layout__tab">Settings</a>
+            </div>
+        </header>
 
-    <main class="mdl-layout__content">
-        <section class="mdl-layout__tab-panel is-active" id="fixed-tab-1">
+        <main class="mdl-layout__content">
+            <section class="mdl-layout__tab-panel is-active" id="fixed-tab-1">
+                <style>
+                    div.fixed {
+                        position: fixed;
+                        bottom: 10px;
+                        right: 16px;
+                        float: right;
+                        display: flex;
+                    }
+                </style>
+
+                <div class="page-content">
+                    <ul class="demo-list-control mdl-list" id="deviceList"></ul>
+                    <div class="fixed">
+                        <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored"
+                            onclick="onAddButtonClick()">
+                            <i class="material-icons">add</i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mdl-layout__tab-panel" id="fixed-tab-2">
+                <div class="page-content" style="margin-left: 16px; margin-top: 16px">
+                    <form name="form-html" action="">
+                        <div class="mdl-selectfield mdl-selectfield--floating-label mdl-js-selectfield">
+                            <select id="DeviceSelection" name="form-html" class="mdl-selectfield__select"
+                                onchange="onDeviceSelected()">
+                                <option value="0">Select Device</option>
+                            </select>
+                            <label for="DeviceSelection" class="mdl-selectfield__label">Select Device</label>
+                        </div>
+                    </form>
+
+                    <form name="form-html" action="">
+                        <div class="mdl-selectfield mdl-selectfield--floating-label mdl-js-selectfield"
+                            style="margin-top: 10px">
+                            <select id="TaskSelection" name="form-html" class="mdl-selectfield__select"
+                                onchange="onTaskSelected()">
+                                <option value="0">Select Task</option>
+                                <option value="1">Show notification with text</option>
+                                <option value="2">Copy text to clipboard</option>
+                                <option value="3">Open link in Browser</option>
+                                <option value="4">Trigger tasker event</option>
+                                <option value="5">Run application</option>
+                                <option value="6">Run terminal command</option>
+                                <option value="7">Send File to another device</option>
+                            </select>
+                            <label for="TaskSelection" class="mdl-selectfield__label">Select Task</label>
+                        </div>
+                    </form>
+
+                    <br>
+
+                    <form id="Args1Form" style="display: none;" action="#">
+                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <input class="mdl-textfield__input" type="text" id="Args1">
+                            <label class="mdl-textfield__label" for="Args1" id="Args1Text">Argument 1</label>
+                        </div>
+                    </form>
+
+                    <form id="Args2Form" style="display: none;" action="#">
+                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <input class="mdl-textfield__input" type="text" id="Args2">
+                            <label class="mdl-textfield__label" for="Args2" id="Args2Text">Argument 2</label>
+                        </div>
+                    </form>
+
+                    <form id="Args3Form" style="display: none;" action="#">
+                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" onclick="onFileSelect()">
+                            <input class="mdl-textfield__input" type="text" id="Args3" readonly>
+                            <label class="mdl-textfield__label" for="Args2" id="Args3Text">Select File</label>
+                        </div>
+                    </form>
+
+                    <br>
+
+                    <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored"
+                        id="submitButton" onclick="onClickSubmit()">Submit
+                    </button>
+
+                    <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored"
+                        id="reloadDevice" onclick="loadDeviceList()">Reload Device List
+                    </button>
+                </div>
+            </section>
+
+            <section class="mdl-layout__tab-panel" id="fixed-tab-3">
+                <div class="page-content" style="margin-left: 16px; margin-top: 16px">
+                    <div id="container-version" style="display: flex">
+                        <i class="material-icons" style="font-size: 60px">sync_problem</i>
+                        &nbsp;&nbsp;
+                        <div style="line-height: 28px;">
+                            <i style="font-size: 20px;font-style: normal"><b>Noti Sender Desktop</b></i>
+                            <br>
+                            <label id="version">Version 0.2.7 ALPHA</label>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <div id="container-account">
+                        <div style="line-height: 28px;">
+                            <i id="LoginInfoTitle" style="font-size: 20px;font-style: normal"><b>Login Required</b></i>
+                            <div style="text-align:center; margin-right: 16px; margin-bottom: 4px">
+                                <button
+                                    class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored"
+                                    id="LoginButton" style="float: right" onclick="onAuth()">Login
+                                </button>
+                            </div>
+                            <label id="LoginInfoDetail">Service will be unavailable until login</label>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                        <input class="mdl-textfield__input" type="text" id="pairingKey"
+                            onchange="onValueChanged('pairingKey','value')">
+                        <label class="mdl-textfield__label" for="pairingKey">Edit Pairing Key (DEBUG PURPOSE
+                            ONLY)</label>
+                    </div>
+
+                    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="encryptionEnabled">
+                        <input type="checkbox" id="encryptionEnabled" class="mdl-switch__input"
+                            onchange="onValueChanged('encryptionEnabled','checked')">
+                        <span class="mdl-switch__label">Encrypt sending Data</span>
+                    </label>
+
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                        <input class="mdl-textfield__input" type="text" id="encryptionPassword"
+                            onchange="onValueChanged('encryptionPassword','value')">
+                        <label class="mdl-textfield__label" for="encryptionPassword">Encryption Password</label>
+                    </div>
+
+                    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="printDebugLog">
+                        <input type="checkbox" id="printDebugLog" class="mdl-switch__input"
+                            onchange="onValueChanged('printDebugLog','checked')">
+                        <span class="mdl-switch__label">Print debug log</span>
+                    </label>
+
+                    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="showAlreadyConnected"
+                        style="margin-top: 8px">
+                        <input type="checkbox" id="showAlreadyConnected" class="mdl-switch__input"
+                            onchange="onValueChanged('showAlreadyConnected','checked')">
+                        <span class="mdl-switch__label">Search already connected devices</span>
+                    </label>
+
+                    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="allowRemovePairRemotely"
+                        style="margin-top: 8px">
+                        <input type="checkbox" id="allowRemovePairRemotely" class="mdl-switch__input"
+                            onchange="onValueChanged('allowRemovePairRemotely','checked')">
+                        <span class="mdl-switch__label">Allow forget paired device remotely</span>
+                    </label>
+
+                    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="startWhenBoot"
+                        style="margin-top: 8px">
+                        <input type="checkbox" id="startWhenBoot" class="mdl-switch__input"
+                            onchange="onValueChanged('startWhenBoot','checked')">
+                        <span class="mdl-switch__label">Start program when system is booted</span>
+                    </label>
+                </div>
+            </section>
+
             <style>
-                div.fixed {
-                    position: fixed;
-                    bottom: 10px;
-                    right: 16px;
+                .modal {
+                    display: none;
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    height: 100%;
+                    overflow: auto;
+                    background-color: rgb(0, 0, 0);
+                    background-color: rgba(0, 0, 0, 0.4);
+                }
+
+                .modal-content {
+                    background-color: #fefefe;
+                    margin: 5%;
+                    padding: 10px;
+                    border: 1px solid #888;
+                }
+
+                .device_icon_background {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    display: inline-block;
+                    text-align: center;
+                    overflow: hidden;
+                    position: relative;
+                    background-color: #757575;
+                }
+
+                .device_icon_text {
+                    transform: translate(-50%, -50%);
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    color: #FFFFFF;
+                }
+
+                .close_button {
+                    bottom: 30px;
                     float: right;
-                    display: flex;
                 }
             </style>
 
-            <div class="page-content">
-                <ul class="demo-list-control mdl-list" id="deviceList"></ul>
-                <div class="fixed">
-                    <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored" onclick="onAddButtonClick()">
-                        <i class="material-icons">add</i>
+            <div id="deviceDetail" class="modal">
+                <div class="modal-content" style="text-align: center">
+                    <div id="deviceTag"></div>
+                    <br>
+
+                    <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored"
+                        onclick="onForgetButtonClick()">
+                        <i class="material-icons">delete</i>Forget
+                    </button>
+
+                    <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored"
+                        onclick="onFindButtonClick()">
+                        <i class="material-icons">find_in_page</i>Find
+                    </button>
+
+                    <br>
+
+                    <button class="mdl-button mdl-js-button mdl-button--raised close_button"
+                        onclick="onModalCloseClick()">
+                        Close
+                    </button>
+
+                    <br>
+
+                    <label id="battery" style="font-size: 16px;"></label>
+                </div>
+            </div>
+
+            <div id="pairModal" class="modal">
+                <div class="modal-content">
+                    <label style="font-size: 16px;">Available devices</label>
+                    <div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active" id="pairProgress"
+                        style="size: 16px; float: right;"></div>
+                    <ul class="demo-list-control mdl-list" id="pairModalList"></ul>
+                    <button class="mdl-button mdl-js-button mdl-button--raised close_button"
+                        onclick="onModalCloseClick()">
+                        Close
                     </button>
                 </div>
             </div>
-        </section>
 
-        <section class="mdl-layout__tab-panel" id="fixed-tab-2">
-            <div class="page-content" style="margin-left: 16px; margin-top: 16px">
-                <form name="form-html" action="">
-                    <div class="mdl-selectfield mdl-selectfield--floating-label mdl-js-selectfield">
-                        <select id="DeviceSelection" name="form-html" class="mdl-selectfield__select"
-                                onchange="onDeviceSelected()">
-                            <option value="0">Select Device</option>
-                        </select>
-                        <label for="DeviceSelection" class="mdl-selectfield__label">Select Device</label>
-                    </div>
-                </form>
-
-                <form name="form-html" action="">
-                    <div class="mdl-selectfield mdl-selectfield--floating-label mdl-js-selectfield"
-                         style="margin-top: 10px">
-                        <select id="TaskSelection" name="form-html" class="mdl-selectfield__select"
-                                onchange="onTaskSelected()">
-                            <option value="0">Select Task</option>
-                            <option value="1">Show notification with text</option>
-                            <option value="2">Copy text to clipboard</option>
-                            <option value="3">Open link in Browser</option>
-                            <option value="4">Trigger tasker event</option>
-                            <option value="5">Run application</option>
-                            <option value="6">Run terminal command</option>
-                        </select>
-                        <label for="TaskSelection" class="mdl-selectfield__label">Select Task</label>
-                    </div>
-                </form>
-
-                <br>
-
-                <form id="Args1Form" style="display: none;" action="#">
-                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                        <input class="mdl-textfield__input" type="text" id="Args1">
-                        <label class="mdl-textfield__label" for="Args1" id="Args1Text">Argument 1</label>
-                    </div>
-                </form>
-
-                <form id="Args2Form" style="display: none;" action="#">
-                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                        <input class="mdl-textfield__input" type="text" id="Args2">
-                        <label class="mdl-textfield__label" for="Args2" id="Args2Text">Argument 2</label>
-                    </div>
-                </form>
-
-                <br>
-
-                <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored"
-                        id="submitButton"
-                        onclick="onClickSubmit()">Submit
-                </button>
-
-                <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored"
-                        id="reloadDevice"
-                        onclick="loadDeviceList()">Reload Device List
-                </button>
+            <div id="snackbar" class="mdl-js-snackbar mdl-snackbar">
+                <div class="mdl-snackbar__text"></div>
+                <button class="mdl-snackbar__action" type="button"></button>
             </div>
-        </section>
+        </main>
+    </div>
 
-        <section class="mdl-layout__tab-panel" id="fixed-tab-3">
-            <div class="page-content" style="margin-left: 16px; margin-top: 16px">
-                <div id="container-version" style="display: flex">
-                    <i class="material-icons" style="font-size: 60px">sync_problem</i>
-                    &nbsp;&nbsp;
-                    <div style="line-height: 28px;">
-                        <i style="font-size: 20px;font-style: normal"><b>Noti Sender Desktop</b></i>
-                        <br>
-                        <label id="version">Version 0.2.7 ALPHA</label>
-                    </div>
-                </div>
-
-                <hr>
-                <div id="container-account">
-                    <div style="line-height: 28px;">
-                        <i id="LoginInfoTitle" style="font-size: 20px;font-style: normal"><b>Login Required</b></i>
-                        <div style="text-align:center; margin-right: 16px; margin-bottom: 4px">
-                            <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored"
-                                    id="LoginButton" style="float: right"
-                                    onclick="onAuth()">Login
-                            </button>
-                        </div>
-                        <label id="LoginInfoDetail">Service will be unavailable until login</label>
-                    </div>
-                </div>
-
-                <hr>
-
-                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                    <input class="mdl-textfield__input" type="text" id="pairingKey"
-                           onchange="onValueChanged('pairingKey','value')">
-                    <label class="mdl-textfield__label" for="pairingKey">Edit Pairing Key (DEBUG PURPOSE ONLY)</label>
-                </div>
-
-                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="encryptionEnabled">
-                    <input type="checkbox" id="encryptionEnabled" class="mdl-switch__input"
-                           onchange="onValueChanged('encryptionEnabled','checked')">
-                    <span class="mdl-switch__label">Encrypt sending Data</span>
-                </label>
-
-                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                    <input class="mdl-textfield__input" type="text" id="encryptionPassword"
-                           onchange="onValueChanged('encryptionPassword','value')">
-                    <label class="mdl-textfield__label" for="encryptionPassword">Encryption Password</label>
-                </div>
-
-                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="printDebugLog">
-                    <input type="checkbox" id="printDebugLog" class="mdl-switch__input"
-                           onchange="onValueChanged('printDebugLog','checked')">
-                    <span class="mdl-switch__label">Print debug log</span>
-                </label>
-
-                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="showAlreadyConnected"
-                       style="margin-top: 8px">
-                    <input type="checkbox" id="showAlreadyConnected" class="mdl-switch__input"
-                           onchange="onValueChanged('showAlreadyConnected','checked')">
-                    <span class="mdl-switch__label">Search already connected devices</span>
-                </label>
-
-                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="allowRemovePairRemotely"
-                       style="margin-top: 8px">
-                    <input type="checkbox" id="allowRemovePairRemotely" class="mdl-switch__input"
-                           onchange="onValueChanged('allowRemovePairRemotely','checked')">
-                    <span class="mdl-switch__label">Allow forget paired device remotely</span>
-                </label>
-
-                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="startWhenBoot"
-                       style="margin-top: 8px">
-                    <input type="checkbox" id="startWhenBoot" class="mdl-switch__input"
-                           onchange="onValueChanged('startWhenBoot','checked')">
-                    <span class="mdl-switch__label">Start program when system is booted</span>
-                </label>
-            </div>
-        </section>
-
-        <style>
-            .modal {
-                display: none;
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                overflow: auto;
-                background-color: rgb(0, 0, 0);
-                background-color: rgba(0, 0, 0, 0.4);
-            }
-
-            .modal-content {
-                background-color: #fefefe;
-                margin: 5%;
-                padding: 10px;
-                border: 1px solid #888;
-            }
-
-            .device_icon_background {
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                display: inline-block;
-                text-align: center;
-                overflow: hidden;
-                position: relative;
-                background-color: #757575;
-            }
-
-            .device_icon_text {
-                transform: translate(-50%, -50%);
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                color: #FFFFFF;
-            }
-
-            .close_button {
-                bottom: 30px;
-                float: right;
-            }
-        </style>
-
-        <div id="deviceDetail" class="modal">
-            <div class="modal-content" style="text-align: center">
-                <div id="deviceTag"></div>
-                <br>
-
-                <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" onclick="onForgetButtonClick()">
-                    <i class="material-icons">delete</i>Forget
-                </button>
-
-                <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" onclick="onFindButtonClick()">
-                    <i class="material-icons">find_in_page</i>Find
-                </button>
-
-                <br>
-
-                <button class="mdl-button mdl-js-button mdl-button--raised close_button" onclick="onModalCloseClick()">
-                    Close
-                </button>
-
-                <br>
-
-                <label id="battery" style="font-size: 16px;"></label>
-            </div>
-        </div>
-
-        <div id="pairModal" class="modal">
-            <div class="modal-content">
-                <label style="font-size: 16px;">Available devices</label>
-                <div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active" id="pairProgress" style="size: 16px; float: right;"></div>
-                <ul class="demo-list-control mdl-list" id="pairModalList"></ul>
-                <button class="mdl-button mdl-js-button mdl-button--raised close_button" onclick="onModalCloseClick()">
-                    Close
-                </button>
-            </div>
-        </div>
-
-        <div id="snackbar" class="mdl-js-snackbar mdl-snackbar">
-            <div class="mdl-snackbar__text"></div>
-            <button class="mdl-snackbar__action" type="button"></button>
-        </div>
-    </main>
-</div>
-
-<script src="renderer.js"></script>
+    <script src="renderer.js"></script>
 </body>
+
 </html>

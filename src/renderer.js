@@ -4,13 +4,16 @@ const {
     changeOption
 } = require("./protocol");
 
+var fs = require('fs');
 const ipcRenderer = require("electron").ipcRenderer;
+const path = require("path");
 const Store = require('electron-store');
 const store = new Store();
 
-const {initializeApp} = require("firebase/app")
+const { initializeApp } = require("firebase/app")
 const firebaseConfig = require("./firebase-config.json")
-const {getAuth, signInWithCredential, signOut, GoogleAuthProvider} = require("firebase/auth");
+const { getAuth, signInWithCredential, signOut, GoogleAuthProvider } = require("firebase/auth");
+const { getStorage, ref, uploadBytes } = require("firebase/storage");
 
 initializeApp(firebaseConfig);
 const auth = getAuth();
@@ -37,8 +40,9 @@ const {
     getEventListener,
     EVENT_TYPE
 } = require("syncprotocol/src/Listener");
-const {Device} = require("syncprotocol/src/Device");
-const {DeviceType, DEVICE_TYPE_UNKNOWN} = require("syncprotocol/src/DeviceType");
+const { Device } = require("syncprotocol/src/Device");
+const { DeviceType, DEVICE_TYPE_UNKNOWN } = require("syncprotocol/src/DeviceType");
+const { ipcMain } = require("electron");
 
 const isDesignDebugMode = false
 if (!isDesignDebugMode) init()
@@ -48,9 +52,11 @@ const deviceSelect = getElement("DeviceSelection")
 
 const Args1Form = getElement("Args1Form")
 const Args2Form = getElement("Args2Form")
+const Args3Form = getElement("Args3Form")
 
 const Args1EditText = getElement("Args1")
 const Args2EditText = getElement("Args2")
+const Args3EditText = getElement("Args3")
 
 const SubmitButton = getElement("submitButton")
 
@@ -77,6 +83,7 @@ SubmitButton.disabled = true
 const deviceList = []
 let deviceListIndex = 0
 let modalSelectedDevice
+let lastSelectedFilePath = ""
 
 let pairDeviceList = []
 let pairDeviceListIndex = 0
@@ -130,6 +137,7 @@ function onTaskSelected() {
         case "1":
             Args1Form.style.display = "block"
             Args2Form.style.display = "block"
+            Args3Form.style.display = "none"
 
             getElement("Args1Text").innerText = "Notification Title"
             getElement("Args2Text").innerText = "Notification Content"
@@ -138,6 +146,7 @@ function onTaskSelected() {
         case "2":
             Args1Form.style.display = "block"
             Args2Form.style.display = "none"
+            Args3Form.style.display = "none"
 
             getElement("Args1Text").innerText = "Text to send"
             break;
@@ -145,6 +154,7 @@ function onTaskSelected() {
         case "3":
             Args1Form.style.display = "block"
             Args2Form.style.display = "none"
+            Args3Form.style.display = "none"
 
             getElement("Args1Text").innerText = "Url to open in browser"
             break;
@@ -152,11 +162,13 @@ function onTaskSelected() {
         case "4":
             Args1Form.style.display = "none"
             Args2Form.style.display = "none"
+            Args3Form.style.display = "none"
             break;
 
         case "5":
             Args1Form.style.display = "block"
             Args2Form.style.display = "none"
+            Args3Form.style.display = "none"
 
             getElement("Args1Text").innerText = "app's package name to open"
             break;
@@ -164,13 +176,21 @@ function onTaskSelected() {
         case "6":
             Args1Form.style.display = "block"
             Args2Form.style.display = "none"
+            Args3Form.style.display = "none"
 
             getElement("Args1Text").innerText = "Type terminal command to run"
+            break;
+
+        case "7":
+            Args1Form.style.display = "none"
+            Args2Form.style.display = "none"
+            Args3Form.style.display = "block"
             break;
 
         default:
             Args1Form.style.display = "none"
             Args2Form.style.display = "none"
+            Args3Form.style.display = "none"
             break;
     }
 }
@@ -182,6 +202,7 @@ function onDeviceSelected() {
 function onClickSubmit() {
     let isArgs1Visible = Args1Form.style.display === "block"
     let isArgs2Visible = Args2Form.style.display === "block"
+    let isArgs3Visible = Args3Form.style.display === "block"
 
     if (isArgs1Visible && isArgs2Visible) {
         requestAction(deviceList[deviceSelect.selectedIndex - 1], taskSelect.options[taskSelect.value].text, Args1EditText.value.trim(), Args2EditText.value.trim())
@@ -189,6 +210,35 @@ function onClickSubmit() {
     } else if (isArgs1Visible) {
         requestAction(deviceList[deviceSelect.selectedIndex - 1], taskSelect.options[taskSelect.value].text, Args1EditText.value.trim())
         resetTextField()
+    } else if (isArgs3Visible) {
+        if (lastSelectedFilePath === "") {
+            createToastNotification('Please select file first', 'Okay')
+        } else {
+            resetTextField()
+            let fileFoo = lastSelectedFilePath.split("\\")
+            let fileName = fileFoo[fileFoo.length - 1]
+
+            new Notification("Uploading File", {
+                body: "Upload Started: " + fileName,
+                icon: path.join(__dirname, '/res/icon.png'),
+            })
+
+            fs.readFile(lastSelectedFilePath, (_, data) => {
+                const storage = getStorage()
+                const pathReference = ref(storage, global.globalOption.pairingKey + '/' + fileName)
+                lastSelectedFilePath = ""
+
+                //if(data.byteLength > 104857600) ...
+                //TODO: add size limit (Maybe 100~200MB?)
+                uploadBytes(pathReference, data).then((_) => {
+                    requestAction(deviceList[deviceSelect.selectedIndex - 1], "Share file", fileName)
+                    new Notification("Upload completed", {
+                        body: "File upload completed: " + fileName + "\nFile will be downloaded on target device automatically",
+                        icon: path.join(__dirname, '/res/icon.png'),
+                    })
+                });
+            })
+        }
     } else {
         requestAction(deviceList[deviceSelect.selectedIndex - 1], taskSelect.options[taskSelect.value].text)
         resetTextField()
@@ -199,6 +249,7 @@ function resetTextField() {
     createToastNotification('Your request has been transmitted!', 'Okay')
     Args1EditText.value = ""
     Args2EditText.value = ""
+    Args3EditText.value = ""
 }
 
 function createToastNotification(message, action) {
@@ -228,6 +279,10 @@ function onDeviceItemClick(index) {
     getEventListener().on(EVENT_TYPE.ON_DATA_RECEIVED, function (data) {
         getElement("battery").innerText = data.receive_data
     })
+}
+
+function onFileSelect() {
+    ipcRenderer.send("file_select_dialog")
 }
 
 function onFindButtonClick() {
@@ -370,11 +425,20 @@ ipcRenderer.on("login_complete", (event, token) => {
             createToastNotification('Login Succeeded', 'Okay')
             changeOption()
         }).catch((error) => {
-        const errorMessage = error.message;
-        console.log(error)
+            const errorMessage = error.message;
+            console.log(error)
 
-        createToastNotification('Login failed: ' + errorMessage, 'Okay')
-    });
+            createToastNotification('Login failed: ' + errorMessage, 'Okay')
+        });
+})
+
+ipcRenderer.on("file_select_dialog_result", (event, result) => {
+    if (result !== null) {
+        lastSelectedFilePath = result
+        let fileFoo = result.split("\\")
+        let fileName = fileFoo[fileFoo.length - 1]
+        Args3EditText.value = fileName
+    }
 })
 
 ipcRenderer.on("notification_detail", (event, map) => {
