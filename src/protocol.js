@@ -176,6 +176,7 @@ class Actions extends PairAction {
     }
 
     onDefaultAction(map) {
+        //TODO: process sms & telecom data receive
         super.onDefaultAction(map);
         switch (map.type) {
             case "send|normal":
@@ -208,7 +209,8 @@ ipcRenderer.on("download_complete", (event, file) => {
 });
 
 function sendNotification(map) {
-    if(map.icon === undefined) {
+    console.log(map)
+    if(map.icon === undefined || map.icon === "none") {
         let title = map.title
         let content = map.message
 
@@ -244,10 +246,12 @@ ipcRenderer.on("notification_image_saved", (event, map, image) => {
 });
 
 function sendSmsNotification(map) {
+
     ipcRenderer.send("notification_detail", map)
 }
 
 function sendTelecomNotification(map) {
+
     ipcRenderer.send("notification_detail", map)
 }
 

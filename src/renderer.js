@@ -242,7 +242,6 @@ function onClickSubmit() {
                         icon: path.join(__dirname, '/res/icon.png'),
                     })
                 }
-
             })
         }
     } else {
@@ -448,6 +447,7 @@ ipcRenderer.on("file_select_dialog_result", (event, result) => {
 })
 
 ipcRenderer.on("notification_detail", (event, map) => {
+    //TODO: implement notification detail dialog
     switch (map.type) {
         case "send|normal":
             showNotificationDetail(map);
