@@ -16,13 +16,14 @@ const firebaseConfig = require("./firebase-config.json");
 const { decompressString } = require("syncprotocol/src/AESCrypto");
 const fs = require("fs");
 const ElectronGoogleOAuth2 = require('@getstation/electron-google-oauth2').default;
-const myApiOauth = new ElectronGoogleOAuth2(firebaseConfig.CLIENT_ID, firebaseConfig.CLIENT_SECRET, firebaseConfig.SCOPES_LIST, { successRedirectURL: 'https://google.com' });
+const myApiOauth = new ElectronGoogleOAuth2(firebaseConfig.CLIENT_ID, firebaseConfig.CLIENT_SECRET, firebaseConfig.SCOPES_LIST, { successRedirectURL: "login_completed.html" });
 
 let mainWindow
 let isQuiting
 let store = new Store()
 
 let iconPath = path.join(__dirname, '/res/icon.png')
+let trayIconPath = path.join(__dirname, '/res/tray_icon.png')
 
 function createWindow() {
     const windowWidth = 440
@@ -59,7 +60,7 @@ function createWindow() {
 
     initConfig(mainWindow)
 
-    const appIcon = new Tray(electron.nativeImage.createFromPath(iconPath));
+    const appIcon = new Tray(electron.nativeImage.createFromPath(trayIconPath));
     const contextMenu = Menu.buildFromTemplate([
         {
             label: 'Open NotiSender', click: function () {

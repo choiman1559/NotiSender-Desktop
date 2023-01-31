@@ -36,10 +36,31 @@
                         float: right;
                         display: flex;
                     }
+
+                    .container {
+                        height: 100%;
+                        position: relative;
+                    }
+
+                    .vertical-center {
+                        margin: 0;
+                        position: absolute;
+                        top: 50%;
+                        -ms-transform: translateY(-50%);
+                        transform: translateY(-50%);
+                    }
                 </style>
 
-                <div class="page-content">
-                    <ul class="demo-list-control mdl-list" id="deviceList"></ul>
+                <div class="page-content container">
+                    <div class="vertical-center" id="emptyDeviceList" style="height: 100%; width: 100%; text-align: center; display: none;">
+                        <i style="font-size: 20px;font-style: normal"><b>No device paired!</b></i>
+                        <br>
+                        <label>Press '+' to add new device</label>
+                    </div>
+
+                    <ul class="demo-list-control mdl-list" id="deviceList">
+
+                    </ul>
                     <div class="fixed">
                         <button class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored"
                             onclick="onAddButtonClick()">
@@ -96,7 +117,8 @@
                     </form>
 
                     <form id="Args3Form" style="display: none;" action="#">
-                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" onclick="onFileSelect()">
+                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+                            onclick="onFileSelect()">
                             <input class="mdl-textfield__input" type="text" id="Args3" readonly>
                             <label class="mdl-textfield__label" for="Args2" id="Args3Text">Select File</label>
                         </div>
@@ -144,7 +166,7 @@
 
                     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                         <input class="mdl-textfield__input" type="text" id="pairingKey"
-                            onchange="onValueChanged('pairingKey','value')">
+                            onchange="onValueChanged('pairingKey','value')" readonly>
                         <label class="mdl-textfield__label" for="pairingKey">Edit Pairing Key (DEBUG PURPOSE
                             ONLY)</label>
                     </div>

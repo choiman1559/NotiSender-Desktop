@@ -62,6 +62,7 @@ const SubmitButton = getElement("submitButton")
 
 const DeviceList = getElement("deviceList")
 const deviceDetail = getElement("deviceDetail")
+const emptyDeviceList = getElement("emptyDeviceList")
 const pairModalList = getElement("pairModalList")
 const pairModal = getElement("pairModal")
 const pairProgress = getElement("pairProgress")
@@ -93,36 +94,43 @@ function loadDeviceList() {
     while (deviceList.length) deviceList.pop()
     deviceListIndex = 0
 
+    emptyDeviceList.style.display = "none"
     deviceSelect.innerHTML = '<option value="0">Select Device</option>'
     DeviceList.innerHTML = ""
 
     let value = [];
-    if (store.has("paired_list")) value = JSON.parse(store.get("paired_list"))
+    if (store.has("paired_list")) {
+        value = JSON.parse(store.get("paired_list"))
+        if (value.length > 0) for (let i = 0; i < value.length; i++) {
+            const arr = value[i].split("|")
+            let device = new Device(arr[0], arr[1])
+            let deviceType = new DeviceType(DEVICE_TYPE_UNKNOWN)
+            if (arr.length >= 3) {
+                deviceType = new DeviceType(arr[2])
+                device.deviceType = deviceType
+            }
 
-    for (let i = 0; i < value.length; i++) {
-        const arr = value[i].split("|")
-        let device = new Device(arr[0], arr[1])
-        let deviceType = new DeviceType(DEVICE_TYPE_UNKNOWN)
-        if (arr.length >= 3) {
-            deviceType = new DeviceType(arr[2])
-            device.deviceType = deviceType
-        }
+            deviceList.push(device)
+            deviceSelect.add(new Option(arr[0]))
+            DeviceList.innerHTML += '<li class="mdl-list__item" style="height: 65px">\n' +
+                '                     <div class="device_icon_background" style="background-color: ' + getBackgroundColor(arr[0]) + '">\n' +
+                '                           <i class="device_icon_text material-icons" style="color: ' + getForegroundColor(arr[0]) + '">' + deviceType.getMaterialIconString() + '</i>' +
+                '                     </div>\n' +
+                '                    <span class="mdl-list__item-primary-content">\n' +
+                '                       &nbsp;&nbsp;&nbsp;' + arr[0] + '\n' +
+                '                    </span>\n' +
+                '                    <span class="mdl-list__item-secondary-action">\n' +
+                '                         <a class="icon material-icons" onclick="onDeviceItemClick(this.id)" id="device' + deviceListIndex + '" href="#" style="text-decoration:none;">settings</a>\n' +
+                '                    </span>\n' +
+                '                </li>'
+            deviceListIndex += 1;
+        } else showEmptyDeviceList()
+    } else showEmptyDeviceList()
+}
 
-        deviceList.push(device)
-        deviceSelect.add(new Option(arr[0]))
-        DeviceList.innerHTML += '<li class="mdl-list__item" style="height: 65px">\n' +
-            '                     <div class="device_icon_background" style="background-color: ' + getBackgroundColor(arr[0]) + '">\n' +
-            '                           <i class="device_icon_text material-icons" style="color: ' + getForegroundColor(arr[0]) + '">' + deviceType.getMaterialIconString() + '</i>' +
-            '                     </div>\n' +
-            '                    <span class="mdl-list__item-primary-content">\n' +
-            '                       &nbsp;&nbsp;&nbsp;' + arr[0] + '\n' +
-            '                    </span>\n' +
-            '                    <span class="mdl-list__item-secondary-action">\n' +
-            '                         <a class="icon material-icons" onclick="onDeviceItemClick(this.id)" id="device' + deviceListIndex + '" href="#" style="text-decoration:none;">settings</a>\n' +
-            '                    </span>\n' +
-            '                </li>'
-        deviceListIndex += 1;
-    }
+function showEmptyDeviceList() {
+    console.log("blocker")
+    emptyDeviceList.style.display = "block"
 }
 
 loadDeviceList()
@@ -302,30 +310,34 @@ function onForgetButtonClick() {
 }
 
 function onAddButtonClick() {
-    pairModal.style.display = "block"
-    pairProgress.style.display = "block"
-    while (pairDeviceList.length) pairDeviceList.pop()
-    pairDeviceListIndex = 0
-    pairModalList.innerHTML = ""
-
-    requestDeviceListWidely()
-    getEventListener().on(EVENT_TYPE.ON_DEVICE_FOUND, function (device) {
-        if (pairDeviceList.indexOf(device) === -1) {
-            let deviceIcon = device.deviceType === undefined ? "devices_other" : new DeviceType(device.deviceType).getMaterialIconString()
-            pairModalList.innerHTML += '<li class="mdl-list__item" style="height: 65px" onclick="onPairDeviceItemClick(this.id)" id="pairDevice' + pairDeviceListIndex + '">\n' +
-                '                     <div class="device_icon_background" style="background-color: ' + getBackgroundColor(device.deviceName) + '">\n' +
-                '                           <i class="device_icon_text material-icons" style="color: ' + getForegroundColor(device.deviceName) + '">' + deviceIcon + '</i>' +
-                '                     </div>\n' +
-                '                    <span class="mdl-list__item-primary-content">\n' +
-                '                       &nbsp;' + device.deviceName + '\n' +
-                '                    </span>\n' +
-                '                     <span class="mdl-list__item-secondary-content" id="pairDeviceStatus' + pairDeviceListIndex + '" style="font-size: 12px"></span>\n' +
-                '                </li>'
-
-            pairDeviceList.push(device)
-            pairDeviceListIndex += 1;
-        }
-    })
+    if(getPreferenceValue("login_token", "") === "") {
+        createToastNotification('Please login first', 'Okay')
+    } else {
+        pairModal.style.display = "block"
+        pairProgress.style.display = "block"
+        while (pairDeviceList.length) pairDeviceList.pop()
+        pairDeviceListIndex = 0
+        pairModalList.innerHTML = ""
+    
+        requestDeviceListWidely()
+        getEventListener().on(EVENT_TYPE.ON_DEVICE_FOUND, function (device) {
+            if (pairDeviceList.indexOf(device) === -1) {
+                let deviceIcon = device.deviceType === undefined ? "devices_other" : new DeviceType(device.deviceType).getMaterialIconString()
+                pairModalList.innerHTML += '<li class="mdl-list__item" style="height: 65px" onclick="onPairDeviceItemClick(this.id)" id="pairDevice' + pairDeviceListIndex + '">\n' +
+                    '                     <div class="device_icon_background" style="background-color: ' + getBackgroundColor(device.deviceName) + '">\n' +
+                    '                           <i class="device_icon_text material-icons" style="color: ' + getForegroundColor(device.deviceName) + '">' + deviceIcon + '</i>' +
+                    '                     </div>\n' +
+                    '                    <span class="mdl-list__item-primary-content">\n' +
+                    '                       &nbsp;' + device.deviceName + '\n' +
+                    '                    </span>\n' +
+                    '                     <span class="mdl-list__item-secondary-content" id="pairDeviceStatus' + pairDeviceListIndex + '" style="font-size: 12px"></span>\n' +
+                    '                </li>'
+    
+                pairDeviceList.push(device)
+                pairDeviceListIndex += 1;
+            }
+        })
+    }
 }
 
 function onPairDeviceItemClick(index) {

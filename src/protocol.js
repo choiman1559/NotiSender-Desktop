@@ -246,12 +246,12 @@ ipcRenderer.on("notification_image_saved", (event, map, image) => {
 });
 
 function sendSmsNotification(map) {
-
+    
     ipcRenderer.send("notification_detail", map)
 }
 
 function sendTelecomNotification(map) {
-
+    
     ipcRenderer.send("notification_detail", map)
 }
 
