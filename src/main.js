@@ -16,7 +16,7 @@ const firebaseConfig = require("./firebase-config.json");
 const { decompressString } = require("syncprotocol/src/AESCrypto");
 const fs = require("fs");
 const ElectronGoogleOAuth2 = require('@getstation/electron-google-oauth2').default;
-const myApiOauth = new ElectronGoogleOAuth2(firebaseConfig.CLIENT_ID, firebaseConfig.CLIENT_SECRET, firebaseConfig.SCOPES_LIST, { successRedirectURL: "login_completed.html" });
+const myApiOauth = new ElectronGoogleOAuth2(firebaseConfig.CLIENT_ID, firebaseConfig.CLIENT_SECRET, firebaseConfig.SCOPES_LIST, { successRedirectURL: "https://choiman1559.github.io/NotiSender-Desktop/login_completed.html" });
 
 let mainWindow
 let isQuiting
