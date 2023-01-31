@@ -4,8 +4,9 @@ name: Deploy static content to Pages
 on:
   # Runs on pushes targeting the default branch
   push:
-    paths: './src/pages'
-
+    branches: ['master']
+    paths: ['src/pages/**']
+   
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
