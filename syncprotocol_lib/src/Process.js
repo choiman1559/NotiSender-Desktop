@@ -10,7 +10,7 @@ const {
 } = require("./ProcessUtil");
 
 function onMessageReceived(data) {
-    //if(data.topic !== global.globalOption.pairingKey) return;
+    if(data.topic !== global.globalOption.pairingKey) return;
     if (data.encrypted === "true") {
         if (global.globalOption.encryptionEnabled && global.globalOption.encryptionPassword != null) {
             if (data.type.startsWith("pair") && !data.send_device_name === global.globalOption.deviceName) return

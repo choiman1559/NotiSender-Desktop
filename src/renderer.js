@@ -223,7 +223,7 @@ function onClickSubmit() {
             createToastNotification('Please select file first', 'Okay')
         } else {
             resetTextField()
-            let fileFoo = lastSelectedFilePath.split("\\")
+            let fileFoo = lastSelectedFilePath.split(lastSelectedFilePath.indexOf("\\") > -1 ? "\\": "/")
             let fileName = fileFoo[fileFoo.length - 1]
 
             new Notification("Uploading File", {
@@ -452,9 +452,8 @@ ipcRenderer.on("login_complete", (event, token) => {
 ipcRenderer.on("file_select_dialog_result", (event, result) => {
     if (result !== null) {
         lastSelectedFilePath = result
-        let fileFoo = result.split("\\")
-        let fileName = fileFoo[fileFoo.length - 1]
-        Args3EditText.value = fileName
+        let fileFoo = result.split(result.indexOf("\\") > -1 ? "\\" : "/")
+        Args3EditText.value = fileFoo[fileFoo.length - 1]
     }
 })
 

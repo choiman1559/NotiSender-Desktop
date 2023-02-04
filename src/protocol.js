@@ -15,7 +15,6 @@ const keySender = require('./lib/key-sender')
 const ChildProcess = require('child_process')
 const clipboard = require('electron').clipboard;
 const { getStorage, ref, getDownloadURL } = require("firebase/storage");
-const {decompressString} = require("syncprotocol/src/AESCrypto");
 const fs = require("fs");
 
 const store = new Store()
@@ -216,7 +215,6 @@ function sendNotification(map) {
 
         let notification = new Notification(title, {
             body: content,
-            icon: 'image.png',
         })
 
         notification.onclick = () => {
