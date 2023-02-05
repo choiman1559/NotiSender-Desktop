@@ -11,8 +11,10 @@ __Disclamer: This is an alpha version still in development.__
 2. Install artifacts according to your OS environment.
 3. After running NotiSender-Desktop, log in from the "Settings" menu.
 4. After logging in, restart NotiSender-Desktop.
-5. (Optional) After pairing with another device, you can use the following remote functions:
+5. (Optional) After pairing with another device, you can use the remote functions.
 
+## Features
+ __Remote functions__
  - Send notification with custom title and message
  - Copy text to clipboard
  - Open link in browser
@@ -20,3 +22,9 @@ __Disclamer: This is an alpha version still in development.__
  - Run application with package name
  - Run terminal command (Unstable)
  - Send file to another device (Max file size. 100MB)
+ 
+ __Notification Mirroring__ (WORKING)
+ - Receive notification
+ - Start remote application run
+ - Notification history
+ - Reply for SMS/Phone notification
