@@ -68,7 +68,7 @@ function createWindow() {
             }
         },
         {
-            label: 'Quit NotiSender', click: function () {
+            label: 'Quit', click: function () {
                 app.isQuiting = true
                 app.quit()
             }

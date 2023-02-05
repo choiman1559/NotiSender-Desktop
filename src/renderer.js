@@ -67,9 +67,10 @@ const pairModalList = getElement("pairModalList")
 const pairModal = getElement("pairModal")
 const pairProgress = getElement("pairProgress")
 
-const pairingKey = getElement("pairingKey")
+const enabled = getElement("enabled")
 const encryptionEnabled = getElement("encryptionEnabled")
 const encryptionPassword = getElement("encryptionPassword")
+const showPassword = getElement("showPassword")
 const printDebugLog = getElement("printDebugLog")
 const showAlreadyConnected = getElement("showAlreadyConnected")
 const allowRemovePairRemotely = getElement("allowRemovePairRemotely")
@@ -382,13 +383,19 @@ function getPreferenceValue(key, defValue) {
     return value == null ? defValue : value
 }
 
+enabled.checked = getPreferenceValue("enabled", true)
 encryptionEnabled.checked = getPreferenceValue("encryptionEnabled", false)
 encryptionPassword.value = getPreferenceValue("encryptionPassword", "")
 printDebugLog.checked = getPreferenceValue("printDebugLog", false)
 showAlreadyConnected.checked = getPreferenceValue("showAlreadyConnected", false)
 allowRemovePairRemotely.checked = getPreferenceValue("allowRemovePairRemotely", true)
 startWhenBoot.checked = getPreferenceValue("startWhenBoot", true)
-pairingKey.value = getPreferenceValue("pairingKey", "test100")
+
+showPassword.addEventListener("click", function(){
+    this.classList.toggle("fa-eye-slash")
+    const type = encryptionPassword.getAttribute("type") === "password" ? "text" : "password"
+    encryptionPassword.setAttribute("type", type)
+})
 
 function onValueChanged(id, type) {
     store.set(id, type === "checked" ? getElement(id).checked : getElement(id).value)
