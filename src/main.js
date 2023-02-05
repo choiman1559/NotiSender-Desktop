@@ -138,7 +138,11 @@ if (!gotTheLock) {
     app.on('ready', () => {
         createWindow()
 
-        ipcMain.on("download_request", (event, info) => {
+        ipcMain.on("version_request", () => {
+            mainWindow.webContents.send("version_info", electron.app.getVersion())
+        })
+
+        ipcMain.on("download_request", (_, info) => {
             download(mainWindow, info.url)
                 .then(dl => mainWindow.webContents.send("download_complete", dl.getSavePath()));
         })
@@ -155,7 +159,7 @@ if (!gotTheLock) {
             });
         })
 
-        ipcMain.on("notification_image_required", (event, map) => {
+        ipcMain.on("notification_image_required", (_, map) => {
             const imageRaw = map.icon
             decompressString(imageRaw).then((decompressed) => {
                 let imagePath = app.getPath('userData') + "/imageCache/"
@@ -169,12 +173,12 @@ if (!gotTheLock) {
             })
         })
 
-        ipcMain.on("notification_detail", (event, map) => {
+        ipcMain.on("notification_detail", (_, map) => {
             mainWindow.show()
             mainWindow.webContents.send("notification_detail", map);
         })
 
-        ipcMain.on("file_select_dialog", (event) => {
+        ipcMain.on("file_select_dialog", () => {
             dialog.showOpenDialog({ properties: ['openFile'] }).then(function (response) {
                 if (!response.canceled) {
                     mainWindow.webContents.send("file_select_dialog_result", response.filePaths[0]);

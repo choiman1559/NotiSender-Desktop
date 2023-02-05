@@ -15,6 +15,7 @@ const keySender = require('./lib/key-sender')
 const ChildProcess = require('child_process')
 const clipboard = require('electron').clipboard;
 const { getStorage, ref, getDownloadURL } = require("firebase/storage");
+const firebaseConfig = require("./firebase-config.json");
 const fs = require("fs");
 
 const store = new Store()
@@ -22,6 +23,7 @@ function getPreferenceValue(key, defValue) {
     const value = store.get(key)
     return value == null ? defValue : value
 }
+
 function settingOption() {
     const option = new ConnectionOption()
 
@@ -37,8 +39,8 @@ function settingOption() {
     option.authWithHMac = getPreferenceValue("hmacAuthEnabled", false)
 
     //Non-Customizable options
-    option.senderId = '799908929421'
-    option.serverKey = "key=AAAAuj5Jn40:APA91bGhJ53y4zUYoQCAtXE_ro6Fijpc2MGazy2wlvf1fBVUVTAXUH-TdpEEiufwLhLVNABDb32iAoz0A-2OOihWoqOXZb5AzGK1o5lbo7nqV1Z5legJwb_N0dTIzf0WEAb0wC0PWHah"
+    option.senderId = firebaseConfig.senderId
+    option.serverKey = firebaseConfig.serverKey
     option.identifierValue = machineIdSync(true)
     option.deviceName = require("os").hostname()
 
@@ -175,8 +177,15 @@ class Actions extends PairAction {
     }
 
     onDefaultAction(map) {
-        //TODO: process sms & telecom data receive
         super.onDefaultAction(map);
+        if(getPreferenceValue("deadlineTime", false) && map.date !== undefined) {
+            const deadlineTimeInMin = getPreferenceValue("deadlineTimeValue", -1)
+            const nowInMill = Date.now()
+            const sentDateInMill = Date.parse(map.date)
+
+            if(deadlineTimeInMin !== -1 && nowInMill - sentDateInMill > deadlineTimeInMin * 60000) return
+        }
+
         switch (map.type) {
             case "send|normal":
                 sendNotification(map);
@@ -199,7 +208,7 @@ function changeOption() {
     setConnectionOption(settingOption())
 }
 
-ipcRenderer.on("download_complete", (event, file) => {
+ipcRenderer.on("download_complete", (_, file) => {
     console.log(`download URL: ${file}`);
     new Notification("Download Completed", {
         body: "Downloaded file saved at: " + file,
@@ -225,7 +234,7 @@ function sendNotification(map) {
     }
 }
 
-ipcRenderer.on("notification_image_saved", (event, map, image) => {
+ipcRenderer.on("notification_image_saved", (_, map, image) => {
     let title = map.title
     let content = map.message
 
@@ -244,13 +253,27 @@ ipcRenderer.on("notification_image_saved", (event, map, image) => {
 });
 
 function sendSmsNotification(map) {
-    
-    ipcRenderer.send("notification_detail", map)
+    const address = map.address
+    const message = map.message
+
+    let notification = new Notification("New message from " + address, {
+        body: message,
+    })
+
+    notification.onclick = () => {
+        ipcRenderer.send("notification_detail", map)
+    }
 }
 
 function sendTelecomNotification(map) {
-    
-    ipcRenderer.send("notification_detail", map)
+    const address = map.address
+    let notification = new Notification("New call inbound from " + address, {
+        body: "click here to reply or check detail",
+    })
+
+    notification.onclick = () => {
+        ipcRenderer.send("notification_detail", map)
+    }
 }
 
 module.exports = {
