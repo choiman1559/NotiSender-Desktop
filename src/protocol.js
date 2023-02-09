@@ -4,7 +4,6 @@ const {PairAction} = require("syncprotocol/src/Actions");
 const {responsePairAcceptation, responseDataRequest} = require("syncprotocol/src/ProcessUtil");
 const {Device} = require("syncprotocol/src/Device");
 const Store = require('electron-store');
-const firebaseConfig = require('./firebase-config.json')
 
 const ipcRenderer = require("electron").ipcRenderer;
 const path = require("path");
