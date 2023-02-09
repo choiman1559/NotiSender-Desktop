@@ -4,16 +4,16 @@ const {
     changeOption
 } = require("./protocol");
 
-var fs = require('fs');
+const fs = require('fs');
 const ipcRenderer = require("electron").ipcRenderer;
 const path = require("path");
 const Store = require('electron-store');
 const store = new Store();
 
-const { initializeApp } = require("firebase/app")
+const {initializeApp} = require("firebase/app")
 const firebaseConfig = require("./firebase-config.json")
-const { getAuth, signInWithCredential, signOut, GoogleAuthProvider } = require("firebase/auth");
-const { getStorage, ref, uploadBytes } = require("firebase/storage");
+const {getAuth, signInWithCredential, signOut, GoogleAuthProvider} = require("firebase/auth");
+const {getStorage, ref, uploadBytes} = require("firebase/storage");
 
 initializeApp(firebaseConfig);
 const auth = getAuth();
@@ -40,9 +40,9 @@ const {
     getEventListener,
     EVENT_TYPE
 } = require("syncprotocol/src/Listener");
-const { Device } = require("syncprotocol/src/Device");
-const { DeviceType, DEVICE_TYPE_UNKNOWN } = require("syncprotocol/src/DeviceType");
-const { ipcMain } = require("electron");
+const {Device} = require("syncprotocol/src/Device");
+const {DeviceType, DEVICE_TYPE_UNKNOWN} = require("syncprotocol/src/DeviceType");
+const {postRestApi} = require("syncprotocol/src/PostRequset");
 
 const isDesignDebugMode = false
 if (!isDesignDebugMode) init()
@@ -67,6 +67,10 @@ const pairModalList = getElement("pairModalList")
 const pairModal = getElement("pairModal")
 const pairProgress = getElement("pairProgress")
 
+const batteryContainer = getElement("batteryContainer")
+const batteryIcon = getElement("batteryIcon")
+const batteryText = getElement("batteryText")
+
 const enabled = getElement("enabled")
 const encryptionEnabled = getElement("encryptionEnabled")
 const encryptionPassword = getElement("encryptionPassword")
@@ -82,6 +86,11 @@ const LoginInfoTitle = getElement("LoginInfoTitle")
 const LoginButton = getElement("LoginButton")
 
 const notificationDetailModal = getElement("notificationDetailModal")
+const notificationDetailTitle = getElement("notificationDetailTitle")
+const notificationDetailText = getElement("notificationDetailText")
+const remoteRunButton = getElement("remoteRunButton")
+const smsReplyMessageContainer = getElement("smsReplyMessageContainer")
+const smsReplyMessageValue = getElement("smsReplyMessageValue")
 
 const deadlineTime = getElement("deadlineTime")
 const deadlineTimeValue = getElement("deadlineTimeValue")
@@ -230,7 +239,7 @@ function onClickSubmit() {
             createToastNotification('Please select file first', 'Okay')
         } else {
             resetTextField()
-            let fileFoo = lastSelectedFilePath.split(lastSelectedFilePath.indexOf("\\") > -1 ? "\\": "/")
+            let fileFoo = lastSelectedFilePath.split(lastSelectedFilePath.indexOf("\\") > -1 ? "\\" : "/")
             let fileName = fileFoo[fileFoo.length - 1]
 
             new Notification("Uploading File", {
@@ -285,8 +294,6 @@ function createToastNotification(message, action) {
 
 function onDeviceItemClick(index) {
     modalSelectedDevice = deviceList[index.replace("device", "")]
-
-    getElement("battery").innerText = ""
     getElement("deviceTag").innerHTML =
         '                     <div class="device_icon_background" style="background-color: ' + getBackgroundColor(modalSelectedDevice.deviceName) + '">\n' +
         '                           <i class="device_icon_text material-icons" style="color: ' + getForegroundColor(modalSelectedDevice.deviceName) + '">' + modalSelectedDevice.deviceType.getMaterialIconString() + '</i>' +
@@ -295,9 +302,18 @@ function onDeviceItemClick(index) {
         '                    </span><br>'
 
     deviceDetail.style.display = "block"
+    batteryContainer.style.display = "none"
+
     requestData(modalSelectedDevice, "battery_info")
     getEventListener().on(EVENT_TYPE.ON_DATA_RECEIVED, function (data) {
-        getElement("battery").innerText = data.receive_data
+        let dataArray = data.receive_data.split("|")
+        batteryContainer.style.display = "flex"
+        batteryText.innerText = dataArray[0] + "% remaining" + (dataArray[1] === "true" ? ", Charging" : "")
+
+        //TODO: icon change depend on battery level change
+        /*if (dataArray[1] === "true") batteryIcon.innerText = "battery_charging_50"
+        else if (dataArray[0] === 100) batteryIcon.innerHTML = "battery_full"
+        else batteryIcon.innerText = "battery_" + (dataArray[0] / 10) + "_bar"*/
     })
 }
 
@@ -317,7 +333,7 @@ function onForgetButtonClick() {
 }
 
 function onAddButtonClick() {
-    if(getPreferenceValue("login_token", "") === "") {
+    if (getPreferenceValue("login_token", "") === "") {
         createToastNotification('Please login first', 'Okay')
     } else {
         pairModal.style.display = "block"
@@ -325,7 +341,7 @@ function onAddButtonClick() {
         while (pairDeviceList.length) pairDeviceList.pop()
         pairDeviceListIndex = 0
         pairModalList.innerHTML = ""
-    
+
         requestDeviceListWidely()
         getEventListener().on(EVENT_TYPE.ON_DEVICE_FOUND, function (device) {
             if (pairDeviceList.indexOf(device) === -1) {
@@ -339,7 +355,7 @@ function onAddButtonClick() {
                     '                    </span>\n' +
                     '                     <span class="mdl-list__item-secondary-content" id="pairDeviceStatus' + pairDeviceListIndex + '" style="font-size: 12px"></span>\n' +
                     '                </li>'
-    
+
                 pairDeviceList.push(device)
                 pairDeviceListIndex += 1;
             }
@@ -400,7 +416,7 @@ showAlreadyConnected.checked = getPreferenceValue("showAlreadyConnected", false)
 allowRemovePairRemotely.checked = getPreferenceValue("allowRemovePairRemotely", true)
 startWhenBoot.checked = getPreferenceValue("startWhenBoot", true)
 
-showPassword.addEventListener("click", function(){
+showPassword.addEventListener("click", function () {
     this.classList.toggle("fa-eye-slash")
     const type = encryptionPassword.getAttribute("type") === "password" ? "text" : "password"
     encryptionPassword.setAttribute("type", type)
@@ -458,11 +474,11 @@ ipcRenderer.on("login_complete", (_, token) => {
             createToastNotification('Login Succeeded', 'Okay')
             changeOption()
         }).catch((error) => {
-            const errorMessage = error.message;
-            console.log(error)
+        const errorMessage = error.message;
+        console.log(error)
 
-            createToastNotification('Login failed: ' + errorMessage, 'Okay')
-        });
+        createToastNotification('Login failed: ' + errorMessage, 'Okay')
+    });
 })
 
 ipcRenderer.on("file_select_dialog_result", (_, result) => {
@@ -479,16 +495,79 @@ ipcRenderer.on("version_info", (_, versionInfo) => {
 })
 
 ipcRenderer.on("notification_detail", (_, map) => {
-    //TODO: implement notification detail dialog
+    notificationDetailModal.style.display = "block"
+    remoteRunButton.onclick = function () {
+        onClickRemoteRunButton(map)
+    }
+
     switch (map.type) {
         case "send|normal":
-            showNotificationDetail(map);
+            notificationDetailTitle.innerText = map.appname
+            notificationDetailText.innerHTML =
+                "<b>Title: </b>" + map.title + "<br>" +
+                "<b>Content: </b>" + map.message + "<br>" +
+                "<b>Device: </b>" + map.device_name + "<br>" +
+                "<b>Posted Time: </b>" + map.date + "<br>"
             break;
+
         case "send|sms":
-            showSmsNotificationDetail(map);
+            smsReplyMessageContainer.style.display = "block"
+            smsReplyMessageValue.value = ""
+            remoteRunButton.innerText = "Reply"
+
+            notificationDetailTitle.innerText = "Sms Overview"
+            notificationDetailText.innerHTML =
+                "<b>From: </b>" + map.address + "<br>" +
+                "<b>Message: </b>" + map.message + "<br>" +
+                "<b>Device: </b>" + map.device_name + "<br>" +
+                "<b>Posted Time: </b>" + map.date + "<br>"
             break;
+
         case "send|telecom":
-            showTelecomNotificationDetail(map);
+            smsReplyMessageContainer.style.display = "block"
+            smsReplyMessageValue.value = ""
+            remoteRunButton.innerText = "Reply"
+
+            notificationDetailTitle.innerText = "Call Overview"
+            notificationDetailText.innerHTML =
+                "<b>From: </b>" + map.address + "<br>" +
+                "<b>Device: </b>" + map.device_name + "<br>" +
+                "<b>Posted Time: </b>" + map.date + "<br>"
             break;
     }
 });
+
+function onClickRemoteRunButton(map) {
+    if (smsReplyMessageValue.value === "") return
+    onModalCloseClick()
+    let data
+
+    switch (map.type) {
+        case "send|normal":
+            data = {
+                "type": "reception|normal",
+                "package": map.package,
+                "device_name": global.globalOption.deviceName,
+                "device_id": global.globalOption.identifierValue,
+                "send_device_name": map.device_name,
+                "send_device_id": map.device_id,
+            }
+            break;
+
+        case "send|sms":
+        case "send|telecom":
+            data = {
+                "type": "reception|sms",
+                "address": map.address,
+                "message": smsReplyMessageValue.value,
+                "device_name": global.globalOption.deviceName,
+                "device_id": global.globalOption.identifierValue,
+                "send_device_name": map.device_name,
+                "send_device_id": map.device_id,
+            }
+            break;
+    }
+
+    postRestApi(data)
+    createToastNotification("Your request has been transmitted!", 'Okay')
+}

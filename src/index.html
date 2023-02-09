@@ -121,7 +121,7 @@
                     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
                          onclick="onFileSelect()">
                         <input class="mdl-textfield__input" type="text" id="Args3" readonly>
-                        <label class="mdl-textfield__label" for="Args2" id="Args3Text">Select File</label>
+                        <label class="mdl-textfield__label" for="Args3" id="Args3Text">Select File</label>
                     </div>
                 </form>
 
@@ -310,25 +310,49 @@
                 <br>
 
                 <button class="mdl-button mdl-js-button mdl-button--raised close_button"
-                        onclick="onModalCloseClick()">
-                    Close
+                        onclick="onModalCloseClick()">Close
                 </button>
 
                 <br>
 
-                <label id="battery" style="font-size: 16px;"></label>
+                <div id="batteryContainer" style="display: none">
+                    <i class="material-icons" id="batteryIcon" style="font-size: 30px">battery_alert</i>&nbsp;
+                    <div style="line-height: 18px;">
+                        <i style="font-size: 18px;font-style: normal">Battery status</i>
+                        <br>
+                        <label id="batteryText">0% remaining, Charging</label>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div id="notificationDetailModal" class="modal">
-            <div class="modal-content">
-                <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored"
+            <div class="modal-content" style="text-align: center">
+                <label style="font-size: 20px;font-weight: bold" id="notificationDetailTitle"></label>
+
+                <br>
+                <br>
+
+                <label id="notificationDetailText" style="text-align: start"></label>
+
+                <br>
+
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" id="smsReplyMessageContainer"
+                     style="display: none">
+                    <input class="mdl-textfield__input" type="text" id="smsReplyMessageValue">
+                    <label class="mdl-textfield__label" for="smsReplyMessageValue">Message to reply</label>
+                </div>
+
+                <br>
+
+                <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
                         onclick="onModalCloseClick()">
-                    <i class="material-icons">delete</i>Close
+                    <i class="material-icons">close</i>Close
                 </button>
 
-                <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored">
-                    <i class="material-icons">find_in_page</i>Remote Run
+                <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored"
+                        id="remoteRunButton">
+                    <i class="material-icons">settings_remote</i>Remote Run
                 </button>
             </div>
         </div>
