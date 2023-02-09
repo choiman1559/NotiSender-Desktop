@@ -4,6 +4,7 @@ const {PairAction} = require("syncprotocol/src/Actions");
 const {responsePairAcceptation, responseDataRequest} = require("syncprotocol/src/ProcessUtil");
 const {Device} = require("syncprotocol/src/Device");
 const Store = require('electron-store');
+const firebaseConfig = require('./firebase-config.json')
 
 const ipcRenderer = require("electron").ipcRenderer;
 const path = require("path");
@@ -37,8 +38,8 @@ function settingOption() {
     option.authWithHMac = getPreferenceValue("hmacAuthEnabled", false)
 
     //Non-Customizable options
-    option.senderId = '799908929421'
-    option.serverKey = "key=AAAAuj5Jn40:APA91bGhJ53y4zUYoQCAtXE_ro6Fijpc2MGazy2wlvf1fBVUVTAXUH-TdpEEiufwLhLVNABDb32iAoz0A-2OOihWoqOXZb5AzGK1o5lbo7nqV1Z5legJwb_N0dTIzf0WEAb0wC0PWHah"
+    option.senderId = firebaseConfig.senderId
+    option.serverKey = firebaseConfig.serverKey
     option.identifierValue = machineIdSync(true)
     option.deviceName = require("os").hostname()
 

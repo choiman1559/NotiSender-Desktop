@@ -80,6 +80,9 @@ const LoginInfoDetail = getElement("LoginInfoDetail")
 const LoginInfoTitle = getElement("LoginInfoTitle")
 const LoginButton = getElement("LoginButton")
 
+const notificationDetailModal = getElement("notificationDetailModal")
+
+
 SubmitButton.disabled = true
 
 const deviceList = []
@@ -362,6 +365,7 @@ function onPairDeviceItemClick(index) {
 function onModalCloseClick() {
     deviceDetail.style.display = "none"
     pairModal.style.display = "none"
+    notificationDetailModal.style.display = "none"
 }
 
 window.onclick = function (event) {
