@@ -145,7 +145,7 @@
                     <div style="line-height: 28px;">
                         <i style="font-size: 20px;font-style: normal"><b>Noti Sender Desktop</b></i>
                         <br>
-                        <label id="version">Version 0.2.7 ALPHA</label>
+                        <label id="version">Version 0.0.0 Unknown</label>
                     </div>
                 </div>
 
@@ -204,6 +204,18 @@
                            onchange="onValueChanged('encryptionPassword','value')">
                     <i class="material-icons fa-eye" id="showPassword">baseline_remove_red_eye</i>
                     <label class="mdl-textfield__label" for="encryptionPassword">Encryption Password</label>
+                </div>
+
+                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="deadlineTime">
+                    <input type="checkbox" id="deadlineTime" class="mdl-switch__input"
+                           onchange="onValueChanged('deadlineTime','checked')">
+                    <span class="mdl-switch__label">Use reception deadline time</span>
+                </label>
+
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label password-container">
+                    <input class="mdl-textfield__input" type="number" id="deadlineTimeValue"
+                           onchange="onValueChanged('deadlineTimeValue','value')">
+                    <label class="mdl-textfield__label" for="deadlineTimeValue">Time value (in minutes)</label>
                 </div>
 
                 <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="printDebugLog">

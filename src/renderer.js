@@ -76,12 +76,15 @@ const showAlreadyConnected = getElement("showAlreadyConnected")
 const allowRemovePairRemotely = getElement("allowRemovePairRemotely")
 const startWhenBoot = getElement("startWhenBoot")
 
+const version = getElement("version")
 const LoginInfoDetail = getElement("LoginInfoDetail")
 const LoginInfoTitle = getElement("LoginInfoTitle")
 const LoginButton = getElement("LoginButton")
 
 const notificationDetailModal = getElement("notificationDetailModal")
 
+const deadlineTime = getElement("deadlineTime")
+const deadlineTimeValue = getElement("deadlineTimeValue")
 
 SubmitButton.disabled = true
 
@@ -390,6 +393,8 @@ function getPreferenceValue(key, defValue) {
 enabled.checked = getPreferenceValue("enabled", true)
 encryptionEnabled.checked = getPreferenceValue("encryptionEnabled", false)
 encryptionPassword.value = getPreferenceValue("encryptionPassword", "")
+deadlineTime.checked = getPreferenceValue("deadlineTime", false)
+deadlineTimeValue.value = getPreferenceValue("deadlineTimeValue", "")
 printDebugLog.checked = getPreferenceValue("printDebugLog", false)
 showAlreadyConnected.checked = getPreferenceValue("showAlreadyConnected", false)
 allowRemovePairRemotely.checked = getPreferenceValue("allowRemovePairRemotely", true)
@@ -439,7 +444,7 @@ function onAuth() {
 }
 
 initAuth()
-ipcRenderer.on("login_complete", (event, token) => {
+ipcRenderer.on("login_complete", (_, token) => {
     credential = GoogleAuthProvider.credential(token.id_token);
     signInWithCredential(auth, credential)
         .then((result) => {
@@ -460,7 +465,7 @@ ipcRenderer.on("login_complete", (event, token) => {
         });
 })
 
-ipcRenderer.on("file_select_dialog_result", (event, result) => {
+ipcRenderer.on("file_select_dialog_result", (_, result) => {
     if (result !== null) {
         lastSelectedFilePath = result
         let fileFoo = result.split(result.indexOf("\\") > -1 ? "\\" : "/")
@@ -468,7 +473,12 @@ ipcRenderer.on("file_select_dialog_result", (event, result) => {
     }
 })
 
-ipcRenderer.on("notification_detail", (event, map) => {
+ipcRenderer.send("version_request")
+ipcRenderer.on("version_info", (_, versionInfo) => {
+    version.innerText = "Version " + versionInfo + " Alpha"
+})
+
+ipcRenderer.on("notification_detail", (_, map) => {
     //TODO: implement notification detail dialog
     switch (map.type) {
         case "send|normal":
