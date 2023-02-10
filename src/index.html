@@ -255,6 +255,7 @@
                 top: 0;
                 width: 100%;
                 height: 100%;
+                min-height: 180px;
                 overflow: auto;
                 background-color: rgb(0, 0, 0);
                 background-color: rgba(0, 0, 0, 0.4);
@@ -264,6 +265,7 @@
                 background-color: #fefefe;
                 margin: 5%;
                 padding: 10px;
+                min-height: 180px;
                 border: 1px solid #888;
             }
 
@@ -308,20 +310,21 @@
                 </button>
 
                 <br>
-
-                <button class="mdl-button mdl-js-button mdl-button--raised close_button"
-                        onclick="onModalCloseClick()">Close
-                </button>
-
                 <br>
 
-                <div id="batteryContainer" style="display: none">
-                    <i class="material-icons" id="batteryIcon" style="font-size: 30px">battery_alert</i>&nbsp;
-                    <div style="line-height: 18px;">
-                        <i style="font-size: 18px;font-style: normal">Battery status</i>
-                        <br>
-                        <label id="batteryText">0% remaining, Charging</label>
+                <div style="bottom: 0; width: 100%; text-align: center; margin-top: 20px;"> 
+                    <div id="batteryContainer" style="display: none; width: 100%;">
+                        <i class="material-icons" id="batteryIcon" style="font-size: 40px">battery_alert</i>&nbsp;
+                        <div style="line-height: 18px;">
+                            <i style="font-size: 16px; font-style: normal">Battery status</i>
+                            <br>
+                            <label id="batteryText">0% remaining, Charging</label>
+                        </div>
                     </div>
+    
+                    <button class="mdl-button mdl-js-button mdl-button--raised close_button"
+                            onclick="onModalCloseClick()">Close
+                    </button>
                 </div>
             </div>
         </div>

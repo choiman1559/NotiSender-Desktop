@@ -10,10 +10,10 @@ const path = require("path");
 const Store = require('electron-store');
 const store = new Store();
 
-const {initializeApp} = require("firebase/app")
+const { initializeApp } = require("firebase/app")
 const firebaseConfig = require("./firebase-config.json")
-const {getAuth, signInWithCredential, signOut, GoogleAuthProvider} = require("firebase/auth");
-const {getStorage, ref, uploadBytes} = require("firebase/storage");
+const { getAuth, signInWithCredential, signOut, GoogleAuthProvider } = require("firebase/auth");
+const { getStorage, ref, uploadBytes } = require("firebase/storage");
 
 initializeApp(firebaseConfig);
 const auth = getAuth();
@@ -40,9 +40,9 @@ const {
     getEventListener,
     EVENT_TYPE
 } = require("syncprotocol/src/Listener");
-const {Device} = require("syncprotocol/src/Device");
-const {DeviceType, DEVICE_TYPE_UNKNOWN} = require("syncprotocol/src/DeviceType");
-const {postRestApi} = require("syncprotocol/src/PostRequset");
+const { Device } = require("syncprotocol/src/Device");
+const { DeviceType, DEVICE_TYPE_UNKNOWN } = require("syncprotocol/src/DeviceType");
+const { postRestApi } = require("syncprotocol/src/PostRequset");
 
 const isDesignDebugMode = false
 if (!isDesignDebugMode) init()
@@ -310,10 +310,9 @@ function onDeviceItemClick(index) {
         batteryContainer.style.display = "flex"
         batteryText.innerText = dataArray[0] + "% remaining" + (dataArray[1] === "true" ? ", Charging" : "")
 
-        //TODO: icon change depend on battery level change
-        /*if (dataArray[1] === "true") batteryIcon.innerText = "battery_charging_50"
-        else if (dataArray[0] === 100) batteryIcon.innerHTML = "battery_full"
-        else batteryIcon.innerText = "battery_" + (dataArray[0] / 10) + "_bar"*/
+        if (dataArray[1] === "true") batteryIcon.innerText = "battery_charging_full"
+        else if (dataArray[0] === 100) batteryIcon.innerText = "battery_full"
+        else batteryIcon.innerText = "battery_" + Math.floor(dataArray[0] / 10) + "_bar"
     })
 }
 
@@ -474,11 +473,11 @@ ipcRenderer.on("login_complete", (_, token) => {
             createToastNotification('Login Succeeded', 'Okay')
             changeOption()
         }).catch((error) => {
-        const errorMessage = error.message;
-        console.log(error)
+            const errorMessage = error.message;
+            console.log(error)
 
-        createToastNotification('Login failed: ' + errorMessage, 'Okay')
-    });
+            createToastNotification('Login failed: ' + errorMessage, 'Okay')
+        });
 })
 
 ipcRenderer.on("file_select_dialog_result", (_, result) => {
@@ -491,7 +490,7 @@ ipcRenderer.on("file_select_dialog_result", (_, result) => {
 
 ipcRenderer.send("version_request")
 ipcRenderer.on("version_info", (_, versionInfo) => {
-    version.innerText = "Version " + versionInfo + " Alpha"
+    version.innerText = "Version " + versionInfo
 })
 
 ipcRenderer.on("notification_detail", (_, map) => {
@@ -538,12 +537,11 @@ ipcRenderer.on("notification_detail", (_, map) => {
 });
 
 function onClickRemoteRunButton(map) {
-    if (smsReplyMessageValue.value === "") return
-    onModalCloseClick()
     let data
 
     switch (map.type) {
         case "send|normal":
+            onModalCloseClick()
             data = {
                 "type": "reception|normal",
                 "package": map.package,
@@ -556,6 +554,8 @@ function onClickRemoteRunButton(map) {
 
         case "send|sms":
         case "send|telecom":
+            if (smsReplyMessageValue.value === "") return
+            onModalCloseClick()
             data = {
                 "type": "reception|sms",
                 "address": map.address,
@@ -571,3 +571,17 @@ function onClickRemoteRunButton(map) {
     postRestApi(data)
     createToastNotification("Your request has been transmitted!", 'Okay')
 }
+
+document.addEventListener('drop', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+ 
+    for (const f of event.dataTransfer.files) {
+        console.log('File Path of dragged files: ', f.path)
+      }
+});
+ 
+document.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+});
