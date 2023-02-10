@@ -578,7 +578,7 @@ document.addEventListener('drop', (event) => {
  
     for (const f of event.dataTransfer.files) {
         console.log('File Path of dragged files: ', f.path)
-      }
+    }
 });
  
 document.addEventListener('dragover', (e) => {
