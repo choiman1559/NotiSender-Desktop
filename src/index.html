@@ -20,9 +20,9 @@
             <span class="mdl-layout-title">NotiSender</span>
         </div>
         <div class="mdl-layout__tab-bar mdl-js-ripple-effect" onclick="onModalCloseClick()">
-            <a href="#fixed-tab-1" class="mdl-layout__tab is-active">Devices</a>
-            <a href="#fixed-tab-2" class="mdl-layout__tab">Actions</a>
-            <a href="#fixed-tab-3" class="mdl-layout__tab">Settings</a>
+            <a href="#fixed-tab-1" class="mdl-layout__tab is-active" id="fixed-bar-1">Devices</a>
+            <a href="#fixed-tab-2" class="mdl-layout__tab" id="fixed-bar-2">Actions</a>
+            <a href="#fixed-tab-3" class="mdl-layout__tab" id="fixed-bar-3">Settings</a>
         </div>
     </header>
 
@@ -104,21 +104,21 @@
                 <br>
 
                 <form id="Args1Form" style="display: none;" action="#">
-                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" id="ArgsDiv1">
                         <input class="mdl-textfield__input" type="text" id="Args1">
                         <label class="mdl-textfield__label" for="Args1" id="Args1Text">Argument 1</label>
                     </div>
                 </form>
 
                 <form id="Args2Form" style="display: none;" action="#">
-                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" id="ArgsDiv2">
                         <input class="mdl-textfield__input" type="text" id="Args2">
                         <label class="mdl-textfield__label" for="Args2" id="Args2Text">Argument 2</label>
                     </div>
                 </form>
 
                 <form id="Args3Form" style="display: none;" action="#">
-                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" id="ArgsDiv3"
                          onclick="onFileSelect()">
                         <input class="mdl-textfield__input" type="text" id="Args3" readonly>
                         <label class="mdl-textfield__label" for="Args3" id="Args3Text">Select File</label>

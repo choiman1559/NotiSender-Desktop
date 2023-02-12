@@ -1,7 +1,7 @@
 {
   "name": "noti_sender",
   "productName": "NotiSender",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "",
   "main": "./src/main.js",
   "scripts": {

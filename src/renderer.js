@@ -485,6 +485,7 @@ ipcRenderer.on("file_select_dialog_result", (_, result) => {
         lastSelectedFilePath = result
         let fileFoo = result.split(result.indexOf("\\") > -1 ? "\\" : "/")
         Args3EditText.value = fileFoo[fileFoo.length - 1]
+        setEditTextDirty(3)
     }
 })
 
@@ -494,6 +495,7 @@ ipcRenderer.on("version_info", (_, versionInfo) => {
 })
 
 ipcRenderer.on("notification_detail", (_, map) => {
+    setPanelActive(1)
     notificationDetailModal.style.display = "block"
     remoteRunButton.onclick = function () {
         onClickRemoteRunButton(map)
@@ -575,9 +577,47 @@ function onClickRemoteRunButton(map) {
 document.addEventListener('drop', (event) => {
     event.preventDefault();
     event.stopPropagation();
- 
-    for (const f of event.dataTransfer.files) {
-        console.log('File Path of dragged files: ', f.path)
+
+    if(event.dataTransfer.files.length > 0) {
+        setPanelActive(2)
+        taskSelect.value = 7
+        onTaskSelected()
+
+        if(event.dataTransfer.files.length > 1) {
+            createToastNotification("Only one file can be transferred at a time.", "Okay")
+        }
+
+        const draggedFile = event.dataTransfer.files[0].path
+
+        lastSelectedFilePath = draggedFile
+        let fileFoo = draggedFile.split(draggedFile.indexOf("\\") > -1 ? "\\" : "/")
+        Args3EditText.value = fileFoo[fileFoo.length - 1]
+        setEditTextDirty(3)
+    } else if(event.dataTransfer.types.indexOf("text/uri-list") > -1) {
+        event.dataTransfer.items[1].getAsString((data) => {
+            data = data.split("\r\n")[0]
+            if(data.startsWith("http")) {
+                setPanelActive(2)
+                taskSelect.value = 3
+                onTaskSelected()
+                Args1EditText.value = data
+                setEditTextDirty(1)
+            }
+        })
+    } else if(event.dataTransfer.types.indexOf("text/plain") > -1) {
+        event.dataTransfer.items[0].getAsString((data) => {
+            setPanelActive(2)
+
+            if(data.startsWith("http")) {
+                taskSelect.value = 3
+            } else {
+                taskSelect.value = 2
+            }
+
+            Args1EditText.value = data
+            setEditTextDirty(1)
+            onTaskSelected()
+        })
     }
 });
  
@@ -585,3 +625,26 @@ document.addEventListener('dragover', (e) => {
     e.preventDefault();
     e.stopPropagation();
 });
+
+function setEditTextDirty(which) {
+    const dirtyClassValue = "is-dirty"
+    let div = getElement("ArgsDiv" + which)
+    div.classList.add(dirtyClassValue)
+}
+
+function setPanelActive(which) {
+    const activeClassValue = "is-active"
+
+    for(let i = 1; i <= 3;i++) {
+        let tabPanel = getElement("fixed-tab-" + i)
+        let tabBar = getElement("fixed-bar-" + i)
+
+        if(i === which) {
+            tabPanel.classList.add(activeClassValue)
+            tabBar.classList.add(activeClassValue)
+        } else {
+            tabPanel.classList.remove(activeClassValue)
+            tabBar.classList.remove(activeClassValue)
+        }
+    }
+}
