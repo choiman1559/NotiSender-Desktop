@@ -73,8 +73,10 @@ function responsePairAcceptation(device, accept) {
     }
 
     let isNotRegistered = true;
+    let previousData = global.store.get("paired_list")
+
     if(global.store.has("paired_list")) {
-        for (let str of JSON.parse(global.store.get("paired_list"))) {
+        for (let str of JSON.parse(previousData)) {
             if (device.equals(parseDevice(str))) {
                 isNotRegistered = false;
                 break;
@@ -83,7 +85,7 @@ function responsePairAcceptation(device, accept) {
     }
 
     if(isNotRegistered) {
-        let newData = global.store.has("paired_list") ? JSON.parse(global.store.get("paired_list")) : []
+        let newData = global.store.has("paired_list") ? JSON.parse(previousData) : []
         newData.push(device.toString())
         global.store.set("paired_list", JSON.stringify(newData));
     }
@@ -94,15 +96,19 @@ function responsePairAcceptation(device, accept) {
 function checkPairResultAndRegister(map, device) {
     if(map.pair_accept) {
         let isNotRegistered = true;
-        for (let str of JSON.parse(global.store.get("paired_list"))) {
-            if (device.equals(parseDevice(str))) {
-                isNotRegistered = false;
-                break;
+        let previousData = global.store.get("paired_list")
+
+        if(global.store.has("paired_list")) {
+            for (let str of JSON.parse(previousData)) {
+                if (device.equals(parseDevice(str))) {
+                    isNotRegistered = false;
+                    break;
+                }
             }
         }
 
         if(isNotRegistered) {
-            let newData = JSON.parse(global.store.get("paired_list"))
+            let newData = global.store.has("paired_list") ? JSON.parse(previousData) : []
             newData.push(device.toString())
             global.store.set("paired_list", JSON.stringify(newData));
         }

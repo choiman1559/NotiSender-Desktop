@@ -1,4 +1,4 @@
-const {encode, encodeMac} = require("./AESCrypto");
+const {encode} = require("./AESCrypto");
 
 function postRestApi(data) {
     let head = {
