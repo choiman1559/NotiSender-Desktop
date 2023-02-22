@@ -6,6 +6,8 @@ Please check out the following papers to explore the details of the techniques u
 
 [TODO: add link]()
 
+__You need full Java runtime installed to use all feature (Not Headless-JRE)__
+
 ## Screenshots
 <img src="https://github.com/choiman1559/NotiSender-Desktop/blob/master/docs/Screenshot_1.png"  width="30%" height="40%"> <img src="https://github.com/choiman1559/NotiSender-Desktop/blob/master/docs/Screenshot_2.png"  width="30%" height="40%"> <img src="https://github.com/choiman1559/NotiSender-Desktop/blob/master/docs/Screenshot_3.png"  width="30%" height="40%">
 
@@ -28,9 +30,11 @@ Please check out the following papers to explore the details of the techniques u
  - Run application with package name
  - Run terminal command (Unstable)
  - Send file to another device (Max file size. 100MB)
+ - Use another device as remote control for presentation
  
- __Notification Mirroring__ (WORKING)
+ __Notification Mirroring__
  - Receive notification
  - Start remote application run
  - Notification history
  - Reply for SMS/Phone notification
+ 
