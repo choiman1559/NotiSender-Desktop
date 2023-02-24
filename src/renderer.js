@@ -313,7 +313,7 @@ function onDeviceItemClick(index) {
         if (dataArray[1] === "true") batteryIcon.innerText = "battery_charging_full"
         else {
             let batteryCalculatedLevel = Math.floor(dataArray[0] / 14.28)
-            if (batteryCalculatedLevel >= 99) batteryIcon.innerText = "battery_full"
+            if (batteryCalculatedLevel >= 7) batteryIcon.innerText = "battery_full"
             else batteryIcon.innerText = "battery_" + batteryCalculatedLevel + "_bar"
         }
     })
