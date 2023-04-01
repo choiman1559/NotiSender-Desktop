@@ -506,7 +506,10 @@ ipcRenderer.on("notification_detail", (_, map) => {
 
     switch (map.type) {
         case "send|normal":
+            smsReplyMessageContainer.style.display = "none"
+            smsReplyMessageValue.value = ""
             notificationDetailTitle.innerText = map.appname
+            remoteRunButton.innerText = "Remote Run"
             notificationDetailText.innerHTML =
                 "<b>Title: </b>" + map.title + "<br>" +
                 "<b>Content: </b>" + map.message + "<br>" +
