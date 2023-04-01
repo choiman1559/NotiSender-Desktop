@@ -498,6 +498,7 @@ ipcRenderer.on("version_info", (_, versionInfo) => {
 })
 
 ipcRenderer.on("notification_detail", (_, map) => {
+    const nickname = (map.nickname === undefined || map.nickname === '' ? "" : " (" + map.nickname + ")")
     setPanelActive(1)
     notificationDetailModal.style.display = "block"
     remoteRunButton.onclick = function () {
@@ -524,7 +525,7 @@ ipcRenderer.on("notification_detail", (_, map) => {
 
             notificationDetailTitle.innerText = "Sms Overview"
             notificationDetailText.innerHTML =
-                "<b>From: </b>" + map.address + "<br>" +
+                "<b>From: </b>" + map.address + nickname + "<br>" +
                 "<b>Message: </b>" + map.message + "<br>" +
                 "<b>Device: </b>" + map.device_name + "<br>" +
                 "<b>Posted Time: </b>" + map.date + "<br>"
@@ -537,7 +538,7 @@ ipcRenderer.on("notification_detail", (_, map) => {
 
             notificationDetailTitle.innerText = "Call Overview"
             notificationDetailText.innerHTML =
-                "<b>From: </b>" + map.address + "<br>" +
+                "<b>From: </b>" + map.address + nickname + "<br>" +
                 "<b>Device: </b>" + map.device_name + "<br>" +
                 "<b>Posted Time: </b>" + map.date + "<br>"
             break;
@@ -567,6 +568,7 @@ function onClickRemoteRunButton(map) {
             data = {
                 "type": "reception|sms",
                 "address": map.address,
+                "nickname": map.nickname,
                 "message": smsReplyMessageValue.value,
                 "device_name": global.globalOption.deviceName,
                 "device_id": global.globalOption.identifierValue,

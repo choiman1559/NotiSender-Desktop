@@ -255,8 +255,9 @@ ipcRenderer.on("notification_image_saved", (_, map, image) => {
 function sendSmsNotification(map) {
     const address = map.address
     const message = map.message
+    const nickname = map.nickname
 
-    let notification = new Notification("New message from " + address, {
+    let notification = new Notification("New message from " + address + (nickname === undefined || nickname === '' ? "" : " (" + nickname + ")"), {
         body: message,
     })
 
@@ -267,7 +268,9 @@ function sendSmsNotification(map) {
 
 function sendTelecomNotification(map) {
     const address = map.address
-    let notification = new Notification("New call inbound from " + address, {
+    const nickname = map.nickname
+
+    let notification = new Notification("New call inbound from " + address + (nickname === undefined || nickname === '' ? "" : " (" + nickname + ")"), {
         body: "click here to reply or check detail",
     })
 
