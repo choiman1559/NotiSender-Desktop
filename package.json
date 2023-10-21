@@ -16,7 +16,7 @@
   "devDependencies": {
     "@web/dev-server": "^0.1.35",
     "electron": "22.3.23",
-    "electron-builder": "^23.1.0"
+    "electron-builder": "^24.8.0"
   },
   "dependencies": {
     "@getstation/electron-google-oauth2": "^2.1.0",
