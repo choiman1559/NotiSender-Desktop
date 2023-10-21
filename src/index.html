@@ -166,6 +166,18 @@
                                    onchange="onValueChanged('enabled','checked')">
                             <span class="mdl-switch__label">Service On/Off</span>
                         </label>
+
+                        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="enabled">
+                            <input type="checkbox" id="telephony" class="mdl-switch__input"
+                                   onchange="onValueChanged('telephony','checked')">
+                            <span class="mdl-switch__label">Telephony Sync On/Off</span>
+                        </label>
+
+                        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="enabled">
+                            <input type="checkbox" id="media" class="mdl-switch__input"
+                                   onchange="onValueChanged('media','checked')">
+                            <span class="mdl-switch__label">Media Sync On/Off</span>
+                        </label>
                     </div>
                 </div>
 
@@ -199,21 +211,43 @@
                     <span class="mdl-switch__label">Encrypt sending Data</span>
                 </label>
 
-                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label password-container">
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label password-container"
+                     style="margin-top: 8px">
                     <input class="mdl-textfield__input" type="password" id="encryptionPassword"
                            onchange="onValueChanged('encryptionPassword','value')">
                     <i class="material-icons fa-eye" id="showPassword">baseline_remove_red_eye</i>
                     <label class="mdl-textfield__label" for="encryptionPassword">Encryption Password</label>
                 </div>
 
-                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="deadlineTime">
+                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="alwaysEncrypt">
+                    <input type="checkbox" id="alwaysEncrypt" class="mdl-switch__input"
+                           onchange="onValueChanged('alwaysEncrypt','checked')">
+                    <span class="mdl-switch__label">Always encrypt data</span>
+                </label>
+
+                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="allowOnlyPaired"
+                       style="margin-top: 8px">
+                    <input type="checkbox" id="allowOnlyPaired" class="mdl-switch__input"
+                           onchange="onValueChanged('allowOnlyPaired','checked')">
+                    <span class="mdl-switch__label">Allow only paired device</span>
+                </label>
+
+                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="useHMAC"
+                       style="margin-top: 8px">
+                    <input type="checkbox" id="useHMAC" class="mdl-switch__input"
+                           onchange="onValueChanged('useHMAC','checked')">
+                    <span class="mdl-switch__label">Check data integrity using HMAC</span>
+                </label>
+
+                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="deadlineTime"
+                       style="margin-top: 8px">
                     <input type="checkbox" id="deadlineTime" class="mdl-switch__input"
                            onchange="onValueChanged('deadlineTime','checked')">
                     <span class="mdl-switch__label">Use reception deadline time</span>
                 </label>
 
                 <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label password-container">
-                    <input class="mdl-textfield__input" type="number" id="deadlineTimeValue"
+                    <input class="mdl-textfield__input" type="number" id="deadlineTimeValue" style="margin-top: 8px"
                            onchange="onValueChanged('deadlineTimeValue','value')">
                     <label class="mdl-textfield__label" for="deadlineTimeValue">Time value (in minutes)</label>
                 </div>
@@ -235,7 +269,7 @@
                        style="margin-top: 8px">
                     <input type="checkbox" id="allowRemovePairRemotely" class="mdl-switch__input"
                            onchange="onValueChanged('allowRemovePairRemotely','checked')">
-                    <span class="mdl-switch__label">Allow forget paired device remotely</span>
+                    <span class="mdl-switch__label">Allow to forget paired device remotely</span>
                 </label>
 
                 <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="startWhenBoot"

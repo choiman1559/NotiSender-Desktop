@@ -3,6 +3,7 @@ class ConnectionOption extends Object {
         super();
     }
 
+    userEmail
     enabled
     pairingKey
     senderId
@@ -16,6 +17,7 @@ class ConnectionOption extends Object {
     receiveFindRequest
     allowRemovePairRemotely
     authWithHMac
+    alwaysEncrypt
 }
 
 module.exports = ConnectionOption

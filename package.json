@@ -1,12 +1,12 @@
 {
   "name": "noti_sender",
   "productName": "NotiSender",
-  "version": "0.2.11",
+  "version": "0.3.1",
   "description": "",
   "main": "./src/main.js",
   "scripts": {
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "testStart": "rm -rf ./node_modules/syncprotocol && npm install file:syncprotocol_lib && electron .",
     "deploy": "electron-builder build",
     "deployWin": "electron-builder --win --x64 --ia32"
   },
@@ -15,7 +15,7 @@
   "license": "LGPL-2.1",
   "devDependencies": {
     "@web/dev-server": "^0.1.35",
-    "electron": "^22.2.0",
+    "electron": "22.3.23",
     "electron-builder": "^23.1.0"
   },
   "dependencies": {
@@ -28,6 +28,7 @@
     "firebase": "^9.14.0",
     "material-design-lite": "^1.3.0",
     "mdl-selectfield": "^1.0.4",
+    "mpris-service": "^2.1.2",
     "node-machine-id": "^1.1.12",
     "node-notifier": "^10.0.1",
     "open": "^8.4.0",

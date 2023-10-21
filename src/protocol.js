@@ -17,6 +17,8 @@ const clipboard = require('electron').clipboard;
 const { getStorage, ref, getDownloadURL } = require("firebase/storage");
 const firebaseConfig = require("./firebase-config.json");
 const fs = require("fs");
+const {MediaData} = require("./MediaSession");
+const {DeviceType, DEVICE_TYPE_UNKNOWN} = require("syncprotocol/src/DeviceType");
 
 const store = new Store()
 function getPreferenceValue(key, defValue) {
@@ -36,7 +38,9 @@ function settingOption() {
     option.receiveFindRequest = getPreferenceValue("receiveFindRequest", false)
     option.allowRemovePairRemotely = getPreferenceValue("allowRemovePairRemotely", true)
     option.pairingKey = getPreferenceValue("pairingKey", "test100")
-    option.authWithHMac = getPreferenceValue("hmacAuthEnabled", false)
+    option.authWithHMac = getPreferenceValue("useHMAC", false)
+    option.alwaysEncrypt = getPreferenceValue("alwaysEncrypt", true)
+    option.userEmail = getPreferenceValue("userEmail", "")
 
     //Non-Customizable options
     option.senderId = firebaseConfig.senderId
@@ -186,15 +190,49 @@ class Actions extends PairAction {
             if(deadlineTimeInMin !== -1 && nowInMill - sentDateInMill > deadlineTimeInMin * 60000) return
         }
 
+        if (store.has("paired_list")) {
+            let value = JSON.parse(store.get("paired_list"))
+            let isPaired = false;
+            let deviceToFind = new Device(map.device_name, map.device_id)
+
+            if (value.length > 0) for (let i = 0; i < value.length; i++) {
+                const arr = value[i].split("|")
+                let device = new Device(arr[0], arr[1])
+                if(device.equals(deviceToFind)) {
+                    isPaired = true;
+                    break;
+                }
+            }
+
+            if(getPreferenceValue("allowOnlyPaired", false) && !isPaired) {
+                return;
+            }
+        }
+
         switch (map.type) {
             case "send|normal":
                 sendNotification(map);
                 break;
+
             case "send|sms":
-                sendSmsNotification(map);
+                if(getPreferenceValue("telephony", false)) {
+                    sendSmsNotification(map);
+                }
                 break;
+
             case "send|telecom":
-                sendTelecomNotification(map);
+                if(getPreferenceValue("telephony", false)) {
+                    sendTelecomNotification(map);
+                }
+                break;
+
+            case "media|meta_data":
+                if(getPreferenceValue("media", false)) {
+                    let meta_data = new MediaData(map.media_data);
+                    if (map.media_data !== undefined && meta_data != null) {
+                        //TODO: implement media sync
+                    }
+                }
                 break;
         }
     }

@@ -1,5 +1,6 @@
 const {Device, parseDevice} = require("./Device");
 const {decode} = require("./AESCrypto");
+const {decodeMac, generateTokenIdentifier} = require("./HmacCrypto");
 const {getEventListener, EVENT_TYPE} = require("./Listener");
 
 const {
@@ -12,13 +13,42 @@ const {
 function onMessageReceived(data) {
     if(data.topic !== global.globalOption.pairingKey) return;
     if (data.encrypted === "true") {
-        if (global.globalOption.encryptionEnabled && global.globalOption.encryptionPassword != null) {
-            if (data.type.startsWith("pair") && !data.send_device_name === global.globalOption.deviceName) return
-            decode(data.encryptedData, global.globalOption.encryptionPassword).then(decodedData => {
-                onMessageReceived(JSON.parse(decodedData.toString()))
-            });
+        if ((global.globalOption.encryptionEnabled && global.globalOption.encryptionPassword != null) || global.globalOption.alwaysEncrypt) {
+            let password = !global.globalOption.encryptionEnabled && global.globalOption.alwaysEncrypt ? Buffer.from(global.globalOption.userEmail).toString('base64') : global.globalOption.encryptionPassword
+
+            if(global.globalOption.authWithHMac && data.HmacID !== "none") {
+                onMessageReceivedHmac(data, password)
+            } else {
+                decode(data.encryptedData, password).then(decodedData => {
+                    processReception(JSON.parse(decodedData.toString()))
+                });
+            }
         }
-    } else processReception(data)
+    } else {
+        if(global.globalOption.authWithHMac && data.HmacID !== "none") {
+            onMessageReceivedHmac(data, null)
+        } else processReception(data)
+    }
+}
+
+function onMessageReceivedHmac(data, password) {
+    let device = null;
+    let value = []
+    if (global.store.has("paired_list")) value = JSON.parse(global.store.get("paired_list"))
+
+    for (let str of value) {
+        let deviceToMatch = parseDevice(str)
+        if (data.HmacID === generateTokenIdentifier(deviceToMatch.deviceName, deviceToMatch.deviceId)) {
+            device = deviceToMatch
+            break
+        }
+    }
+
+    if(device != null) {
+        decodeMac(data.encryptedData, password, device.deviceId).then(decodedData => {
+            processReception(JSON.parse(decodedData.toString()))
+        })
+    }
 }
 
 function processReception(data) {

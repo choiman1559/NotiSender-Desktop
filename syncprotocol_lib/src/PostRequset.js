@@ -1,4 +1,6 @@
 const {encode} = require("./AESCrypto");
+const {encodeMac, generateTokenIdentifier} = require("./HmacCrypto");
+const buffer = require("buffer");
 
 function postRestApi(data) {
     let head = {
@@ -7,17 +9,44 @@ function postRestApi(data) {
         "data": data
     }
 
-    if (global.globalOption.encryptionEnabled && global.globalOption.encryptionPassword !== "") {
-        encode(JSON.stringify(data), global.globalOption.encryptionPassword).then((encoded) => {
+    let password = !global.globalOption.encryptionEnabled && global.globalOption.encryptionEnabled ? global.globalOption.encryptionPassword : Buffer.from(global.globalOption.userEmail, 'base64')
+    let macIdentifier = generateTokenIdentifier(global.globalOption.identifierValue, global.globalOption.deviceName);
+
+    if ((global.globalOption.encryptionEnabled && global.globalOption.encryptionPassword !== "") || global.globalOption.alwaysEncrypt) {
+        if(global.globalOption.authWithHMac) encodeMac(JSON.stringify(data), password, global.globalOption.identifierValue).then((encoded) => {
             if(encoded != null) {
                 let newData = {};
                 newData.encrypted = true
                 newData.encryptedData = encoded
+                newData.HmacID = macIdentifier;
                 head.data = newData;
                 postRestApiWithTopic(head)
             }
         })
+
+        else encode(JSON.stringify(data), password).then((encoded) => {
+                if(encoded != null) {
+                    let newData = {};
+                    newData.encrypted = true
+                    newData.encryptedData = encoded
+                    head.data.HmacID = "none";
+                    head.data = newData;
+                    postRestApiWithTopic(head)
+                }
+            })
     } else {
+        if(global.globalOption.authWithHMac) {
+            encodeMac(JSON.stringify(data), null, global.globalOption.identifierValue).then((encoded) => {
+                let newData = {}
+                newData.encrypted = false
+                newData.encryptedData = encoded
+                newData.HmacID = macIdentifier;
+                head.data = newData;
+            })
+        } else {
+            head.data.HmacID = "none";
+        }
+
         head.data.encrypted = false
         postRestApiWithTopic(head)
     }

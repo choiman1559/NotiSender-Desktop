@@ -103,6 +103,8 @@ const decode = async (plain, key) => {
 module.exports = {
     encode,
     decode,
+    parseAESToken,
+    getCombinedArray,
     compressString,
     decompressString
 };
