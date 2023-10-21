@@ -1,6 +1,5 @@
 const {encode} = require("./AESCrypto");
 const {encodeMac, generateTokenIdentifier} = require("./HmacCrypto");
-const buffer = require("buffer");
 
 function postRestApi(data) {
     let head = {
@@ -11,9 +10,22 @@ function postRestApi(data) {
 
     let password = !global.globalOption.encryptionEnabled && global.globalOption.encryptionEnabled ? global.globalOption.encryptionPassword : Buffer.from(global.globalOption.userEmail, 'base64')
     let macIdentifier = generateTokenIdentifier(global.globalOption.identifierValue, global.globalOption.deviceName);
+    let useHmac;
+
+    switch(data.type) {
+        case "pair|request_device_list":
+        case "pair|request_pair":
+        case "pair|response_device_list":
+        case "pair|accept_pair":
+            useHmac = false;
+            break;
+        default:
+            useHmac = global.globalOption.authWithHMac;
+            break;
+    }
 
     if ((global.globalOption.encryptionEnabled && global.globalOption.encryptionPassword !== "") || global.globalOption.alwaysEncrypt) {
-        if(global.globalOption.authWithHMac) encodeMac(JSON.stringify(data), password, global.globalOption.identifierValue).then((encoded) => {
+        if(useHmac) encodeMac(JSON.stringify(data), password, global.globalOption.identifierValue).then((encoded) => {
             if(encoded != null) {
                 let newData = {};
                 newData.encrypted = true
@@ -35,7 +47,7 @@ function postRestApi(data) {
                 }
             })
     } else {
-        if(global.globalOption.authWithHMac) {
+        if(useHmac) {
             encodeMac(JSON.stringify(data), null, global.globalOption.identifierValue).then((encoded) => {
                 let newData = {}
                 newData.encrypted = false

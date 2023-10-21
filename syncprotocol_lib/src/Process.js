@@ -2,6 +2,7 @@ const {Device, parseDevice} = require("./Device");
 const {decode} = require("./AESCrypto");
 const {decodeMac, generateTokenIdentifier} = require("./HmacCrypto");
 const {getEventListener, EVENT_TYPE} = require("./Listener");
+const ArrayList = require("arraylist-js");
 
 const {
     responseDeviceInfoToFinder,
@@ -9,6 +10,48 @@ const {
     checkPairResultAndRegister,
     removePairedDevice
 } = require("./ProcessUtil");
+
+let splitDataList = new ArrayList();
+class SplitDataObject extends Object {
+    constructor(map) {
+        super(map);
+        let indexInfo = map.split_index.split("/");
+        let currentIndex = indexInfo[0];
+
+        this.length = parseInt(indexInfo[1]);
+        this.data = new Array(length);
+
+        this.unique_id = map.split_unique
+        this.data[currentIndex] = map.split_data
+    }
+
+    addData(map) {
+        this.data[map.split_index.split("/")[0]] = map.split_data;
+        return this;
+    }
+
+    getSize() {
+        let i = 0;
+        for(let obj of this.data) {
+            if(obj !== undefined) {
+                i += 1;
+            }
+        }
+        return i;
+    }
+
+    getFullData() {
+        let string = ""
+        for(let str of this.data) {
+            string += str;
+        }
+        return string;
+    }
+
+    data;
+    unique_id;
+    length;
+}
 
 function onMessageReceived(data) {
     if(data.topic !== global.globalOption.pairingKey) return;
@@ -49,6 +92,24 @@ function onMessageReceivedHmac(data, password) {
             processReception(JSON.parse(decodedData.toString()))
         })
     }
+}
+
+function processSplitData(data) {
+    for (let i = 0; i < splitDataList.size(); i++) {
+        let object = splitDataList.get(i);
+        if (object.unique_id === data.split_unique) {
+            object = object.addData(data);
+
+            if (object.getSize() === object.length) {
+                let newMap = JSON.parse(object.getFullData().toString())
+                processReception(newMap);
+                splitDataList.removeByObject(object);
+            }
+            return;
+        }
+    }
+
+    splitDataList.add(new SplitDataObject(data));
 }
 
 function processReception(data) {
@@ -135,6 +196,10 @@ function processReception(data) {
                     if (isTargetDevice(data) && isPairedDevice(device) && !global.globalOption.receiveFindRequest) {
                         global.actionListener.onFindRequest()
                     }
+                    break;
+
+                case "split_data":
+                    processSplitData(data)
                     break;
 
                 default:
