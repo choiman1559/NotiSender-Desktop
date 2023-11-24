@@ -111,7 +111,7 @@ class Actions extends PairAction {
                     })
 
                     const storage = getStorage()
-                    const pathReference = ref(storage, global.globalOption.pairingKey + '/' + actionArgs[0])
+                    const pathReference = ref(storage, global.globalOption.pairingKey + '/fileTransfer/' + actionArgs[0])
 
                     getDownloadURL(pathReference).then((url) => {
                         console.log(`Start download URL: ${url}`);

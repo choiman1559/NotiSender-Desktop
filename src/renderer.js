@@ -252,7 +252,7 @@ function onClickSubmit() {
 
             fs.readFile(lastSelectedFilePath, (_, data) => {
                 const storage = getStorage()
-                const pathReference = ref(storage, global.globalOption.pairingKey + '/' + fileName)
+                const pathReference = ref(storage, global.globalOption.pairingKey + '/fileTransfer/' + fileName)
                 lastSelectedFilePath = ""
 
                 if (data.byteLength <= 104857600) {
