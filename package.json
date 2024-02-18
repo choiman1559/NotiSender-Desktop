@@ -8,19 +8,19 @@
     "start": "electron .",
     "testStart": "rm -rf ./node_modules/syncprotocol && npm install file:syncprotocol_lib && electron .",
     "deploy": "electron-builder build",
-    "deployWin": "electron-builder --win --x64 --ia32"
+    "deployWin": "electron-builder --win --x64"
   },
   "keywords": [],
   "author": "Choiman1559 <cuj1559@gmail.com>",
   "license": "LGPL-2.1",
   "devDependencies": {
     "@web/dev-server": "^0.1.35",
-    "electron": "22.3.23",
-    "electron-builder": "^24.8.0"
+    "electron": "28.1.4",
+    "electron-builder": "^24.9.1"
   },
   "dependencies": {
     "@getstation/electron-google-oauth2": "^2.1.0",
-    "@material/web": "0.1.0-alpha.0",
+    "@material/web": "1.0.1",
     "@webcomponents/webcomponentsjs": "^2.7.0",
     "battery": "^1.0.1",
     "electron-dl": "^3.5.0",

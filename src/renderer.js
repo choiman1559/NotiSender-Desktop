@@ -11,7 +11,7 @@ const Store = require('electron-store');
 const store = new Store();
 
 const { initializeApp } = require("firebase/app")
-const firebaseConfig = require("./firebase-config.json")
+const firebaseConfig = require("./credential/firebase-config.json")
 const { getAuth, signInWithCredential, signOut, GoogleAuthProvider } = require("firebase/auth");
 const { getStorage, ref, uploadBytes } = require("firebase/storage");
 

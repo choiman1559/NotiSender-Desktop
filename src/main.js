@@ -12,7 +12,7 @@ const Store = require('electron-store')
 const { initConfig } = require("syncprotocol/src/Store");
 const { download } = require("electron-dl")
 
-const firebaseConfig = require("./firebase-config.json");
+const firebaseConfig = require("./credential/firebase-config.json");
 const { decompressString } = require("syncprotocol/src/AESCrypto");
 const fs = require("fs");
 const ElectronGoogleOAuth2 = require('@getstation/electron-google-oauth2').default;

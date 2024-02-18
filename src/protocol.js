@@ -15,10 +15,10 @@ const keySender = require('./lib/key-sender')
 const ChildProcess = require('child_process')
 const clipboard = require('electron').clipboard;
 const { getStorage, ref, getDownloadURL } = require("firebase/storage");
-const firebaseConfig = require("./firebase-config.json");
+const firebaseConfig = require("./credential/firebase-config.json");
+const firebaseCredential = require("./credential/service-account.json");
 const fs = require("fs");
 const {MediaData} = require("./MediaSession");
-const {DeviceType, DEVICE_TYPE_UNKNOWN} = require("syncprotocol/src/DeviceType");
 
 const store = new Store()
 function getPreferenceValue(key, defValue) {
@@ -45,6 +45,7 @@ function settingOption() {
     //Non-Customizable options
     option.senderId = firebaseConfig.senderId
     option.serverKey = firebaseConfig.serverKey
+    option.serverCredential = firebaseCredential
     option.identifierValue = machineIdSync(true)
     option.deviceName = require("os").hostname()
 
