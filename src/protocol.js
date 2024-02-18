@@ -18,7 +18,6 @@ const { getStorage, ref, getDownloadURL } = require("firebase/storage");
 const firebaseConfig = require("./credential/firebase-config.json");
 const firebaseCredential = require("./credential/service-account.json");
 const fs = require("fs");
-const {MediaData} = require("./MediaSession");
 
 const store = new Store()
 function getPreferenceValue(key, defValue) {
@@ -229,10 +228,7 @@ class Actions extends PairAction {
 
             case "media|meta_data":
                 if(getPreferenceValue("media", false)) {
-                    let meta_data = new MediaData(map.media_data);
-                    if (map.media_data !== undefined && meta_data != null) {
-                        //TODO: implement media sync
-                    }
+                    //TODO: implement media sync
                 }
                 break;
         }
