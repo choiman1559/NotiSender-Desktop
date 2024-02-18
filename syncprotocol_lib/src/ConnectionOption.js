@@ -14,6 +14,7 @@ class ConnectionOption extends Object {
     printDebugLog
     showAlreadyConnected
     serverKey
+    serverCredential
     receiveFindRequest
     allowRemovePairRemotely
     authWithHMac

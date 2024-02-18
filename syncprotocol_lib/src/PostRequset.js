@@ -1,11 +1,12 @@
 const {encode} = require("./AESCrypto");
 const {encodeMac, generateTokenIdentifier} = require("./HmacCrypto");
+const {google} = require("googleapis");
 const { selfReceiveDataHash } = require("./Process");
 
 function postRestApi(data) {
     let head = {
-        "to": "/topics/" + global.globalOption.pairingKey,
-        "priority": "high",
+        "topic": global.globalOption.pairingKey,
+        "android": {"priority": "high"},
         "data": data
     }
 
@@ -13,7 +14,7 @@ function postRestApi(data) {
     let macIdentifier = generateTokenIdentifier(global.globalOption.identifierValue, global.globalOption.deviceName);
     let useHmac;
 
-    switch(data.type) {
+    switch (data.type) {
         case "pair|request_device_list":
         case "pair|request_pair":
         case "pair|response_device_list":
@@ -26,8 +27,8 @@ function postRestApi(data) {
     }
 
     if ((global.globalOption.encryptionEnabled && global.globalOption.encryptionPassword !== "") || global.globalOption.alwaysEncrypt) {
-        if(useHmac) encodeMac(JSON.stringify(data), password, global.globalOption.identifierValue).then((encoded) => {
-            if(encoded != null) {
+        if (useHmac) encodeMac(JSON.stringify(data), password, global.globalOption.identifierValue).then((encoded) => {
+            if (encoded != null) {
                 let newData = {};
                 newData.encrypted = true
                 newData.encryptedData = encoded
@@ -38,17 +39,17 @@ function postRestApi(data) {
         })
 
         else encode(JSON.stringify(data), password).then((encoded) => {
-                if(encoded != null) {
-                    let newData = {};
-                    newData.encrypted = true
-                    newData.encryptedData = encoded
-                    head.data.HmacID = "none";
-                    head.data = newData;
-                    postRestApiWithTopic(head)
-                }
-            })
+            if (encoded != null) {
+                let newData = {};
+                newData.encrypted = true
+                newData.encryptedData = encoded
+                head.data.HmacID = "none";
+                head.data = newData;
+                postRestApiWithTopic(head)
+            }
+        })
     } else {
-        if(useHmac) {
+        if (useHmac) {
             encodeMac(JSON.stringify(data), null, global.globalOption.identifierValue).then((encoded) => {
                 let newData = {}
                 newData.encrypted = false
@@ -61,6 +62,16 @@ function postRestApi(data) {
         }
 
         head.data.encrypted = false
+        head.data.topic = global.globalOption.pairingKey
+
+        let dataToSend = {}
+        const keyList = Object.keys(head.data)
+        for(let keyIndex in keyList) {
+            dataToSend[keyList[keyIndex]] = head.data[keyList[keyIndex]] + ""
+        }
+
+        head.data = dataToSend;
+        head = { "message" : head }
         postRestApiWithTopic(head)
     }
 }
@@ -71,24 +82,48 @@ function postRestApiWithTopic(data) {
         selfReceiveDataHash.add(data.data.encryptedData.hash())
     }
 
-    const FCM_API = "https://fcm.googleapis.com/fcm/send";
-    const serverKey = global.globalOption.serverKey
-    const contentType = "application/json";
+    getGoogleAccessToken().then((resolve, _) => {
+        if(resolve != null) {
+            const serverKey = "Bearer " + resolve
+            const FCM_API = "https://fcm.googleapis.com/v1/projects/notisender-41c1b/messages:send";
+            const contentType = "application/json; UTF-8";
 
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", FCM_API)
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", FCM_API)
 
-    xhr.setRequestHeader("Authorization", serverKey)
-    xhr.setRequestHeader("Content-Type", contentType)
+            xhr.setRequestHeader("Authorization", serverKey)
+            xhr.setRequestHeader("Content-Type", contentType)
 
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && global.globalOption.printDebugLog) {
-            console.log(xhr.status + " "  + xhr.responseText)
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && global.globalOption.printDebugLog) {
+                    console.log(xhr.status + " " + xhr.responseText)
+                }
+            };
+
+            xhr.send(JSON.stringify(data))
         }
-    };
+    })
+}
 
-    data.topic = global.globalOption.pairingKey
-    xhr.send(JSON.stringify(data))
+function getGoogleAccessToken() {
+    return new Promise(function(resolve, reject) {
+        const key = global.globalOption.serverCredential
+        const jwtClient = new google.auth.JWT(
+            key.client_email,
+            null,
+            key.private_key,
+            ["https://www.googleapis.com/auth/firebase.messaging"],
+            null
+        );
+
+        jwtClient.authorize(function(err, tokens) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(tokens.access_token);
+        });
+    });
 }
 
 module.exports = {
