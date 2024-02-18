@@ -1,7 +1,7 @@
 const {encode} = require("./AESCrypto");
 const {encodeMac, generateTokenIdentifier} = require("./HmacCrypto");
 const {google} = require("googleapis");
-const { selfReceiveDataHash } = require("./Process");
+const ArrayList = require("arraylist-js");
 
 function postRestApi(data) {
     let head = {
@@ -10,7 +10,6 @@ function postRestApi(data) {
         "data": data
     }
 
-    let password = !global.globalOption.encryptionEnabled && global.globalOption.encryptionEnabled ? global.globalOption.encryptionPassword : Buffer.from(global.globalOption.userEmail, 'base64')
     let macIdentifier = generateTokenIdentifier(global.globalOption.identifierValue, global.globalOption.deviceName);
     let useHmac;
 
@@ -27,6 +26,13 @@ function postRestApi(data) {
     }
 
     if ((global.globalOption.encryptionEnabled && global.globalOption.encryptionPassword !== "") || global.globalOption.alwaysEncrypt) {
+        let password;
+        if(global.globalOption.encryptionEnabled) {
+            password = global.globalOption.encryptionPassword;
+        } else if(global.globalOption.alwaysEncrypt) {
+            password = Buffer.from(global.globalOption.userEmail, 'utf-8').toString('base64')
+        }
+
         if (useHmac) encodeMac(JSON.stringify(data), password, global.globalOption.identifierValue).then((encoded) => {
             if (encoded != null) {
                 let newData = {};
@@ -34,7 +40,7 @@ function postRestApi(data) {
                 newData.encryptedData = encoded
                 newData.HmacID = macIdentifier;
                 head.data = newData;
-                postRestApiWithTopic(head)
+                cleanUpAndPostData(head)
             }
         })
 
@@ -45,7 +51,7 @@ function postRestApi(data) {
                 newData.encryptedData = encoded
                 head.data.HmacID = "none";
                 head.data = newData;
-                postRestApiWithTopic(head)
+                cleanUpAndPostData(head)
             }
         })
     } else {
@@ -63,23 +69,29 @@ function postRestApi(data) {
 
         head.data.encrypted = false
         head.data.topic = global.globalOption.pairingKey
-
-        let dataToSend = {}
-        const keyList = Object.keys(head.data)
-        for(let keyIndex in keyList) {
-            dataToSend[keyList[keyIndex]] = head.data[keyList[keyIndex]] + ""
-        }
-
-        head.data = dataToSend;
-        head = { "message" : head }
-        postRestApiWithTopic(head)
+        cleanUpAndPostData(head)
     }
 }
 
-function postRestApiWithTopic(data) {
+function cleanUpAndPostData(head) {
+    let dataToSend = {}
+    const keyList = Object.keys(head.data)
+    for(let keyIndex in keyList) {
+        dataToSend[keyList[keyIndex]] = head.data[keyList[keyIndex]] + ""
+    }
 
-    if(data.data.encryptedData != undefined) {
-        selfReceiveDataHash.add(data.data.encryptedData.hash())
+    head.data = dataToSend;
+    head = { "message" : head }
+    postRestApiWithTopic(head)
+}
+
+function postRestApiWithTopic(head) {
+    if(head.message.data.encryptedData !== undefined) {
+        if(global.selfReceiveDataHash == null) {
+            global.selfReceiveDataHash = new ArrayList();
+        }
+
+        global.selfReceiveDataHash.add(getStringHash(head.message.data.encryptedData))
     }
 
     getGoogleAccessToken().then((resolve, _) => {
@@ -100,7 +112,7 @@ function postRestApiWithTopic(data) {
                 }
             };
 
-            xhr.send(JSON.stringify(data))
+            xhr.send(JSON.stringify(head))
         }
     })
 }
@@ -126,6 +138,18 @@ function getGoogleAccessToken() {
     });
 }
 
+function getStringHash(str) {
+    let hash = 0, i, chr;
+    if (str.length === 0) return hash;
+    for (i = 0; i < str.length; i++) {
+        chr = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + chr;
+        hash |= 0;
+    }
+    return hash;
+}
+
 module.exports = {
-    postRestApi
+    postRestApi,
+    getStringHash
 }

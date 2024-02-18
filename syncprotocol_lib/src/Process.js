@@ -2,6 +2,7 @@ const {Device, parseDevice} = require("./Device");
 const {decode} = require("./AESCrypto");
 const {decodeMac, generateTokenIdentifier} = require("./HmacCrypto");
 const {getEventListener, EVENT_TYPE} = require("./Listener");
+const {getStringHash} = require("./PostRequset");
 const ArrayList = require("arraylist-js");
 
 const {
@@ -11,7 +12,7 @@ const {
     removePairedDevice
 } = require("./ProcessUtil");
 
-let selfReceiveDataHash = new ArrayList();
+global.selfReceiveDataHash = new ArrayList();
 let splitDataList = new ArrayList();
 
 class SplitDataObject extends Object {
@@ -58,16 +59,22 @@ class SplitDataObject extends Object {
 function onMessageReceived(data) {
     if(data.topic !== global.globalOption.pairingKey) return;
 
-    if(data.encryptedData != undefined) {
-        if(selfReceiveDataHash.has(data.encryptedData.hash())) {
-            selfReceiveDataHash.remove(data.encryptedData.hash());
+    if(data.encryptedData != null || data.encryptedData !== undefined) {
+        const dataHash = getStringHash(data.encryptedData);
+        if(global.selfReceiveDataHash != null && global.selfReceiveDataHash.contains(dataHash)) {
+            global.selfReceiveDataHash.remove(dataHash);
             return;
         }
     }
 
     if (data.encrypted === "true") {
         if ((global.globalOption.encryptionEnabled && global.globalOption.encryptionPassword != null) || global.globalOption.alwaysEncrypt) {
-            let password = !global.globalOption.encryptionEnabled && global.globalOption.alwaysEncrypt ? Buffer.from(global.globalOption.userEmail).toString('base64') : global.globalOption.encryptionPassword
+            let password;
+            if(global.globalOption.encryptionEnabled) {
+                password = global.globalOption.encryptionPassword;
+            } else if(global.globalOption.alwaysEncrypt) {
+                password = Buffer.from(global.globalOption.userEmail, 'utf-8').toString('base64')
+            }
 
             if(global.globalOption.authWithHMac && data.HmacID !== "none") {
                 onMessageReceivedHmac(data, password)
@@ -141,7 +148,7 @@ function processReception(data) {
                     }
                     break;
 
-                    
+
                 case "pair|response_device_list":
                     //Request Device Action
                     //Show device list here; give choice to user which device to pair
