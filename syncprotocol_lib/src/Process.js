@@ -11,7 +11,9 @@ const {
     removePairedDevice
 } = require("./ProcessUtil");
 
+let selfReceiveDataHash = new ArrayList();
 let splitDataList = new ArrayList();
+
 class SplitDataObject extends Object {
     constructor(map) {
         super(map);
@@ -55,6 +57,14 @@ class SplitDataObject extends Object {
 
 function onMessageReceived(data) {
     if(data.topic !== global.globalOption.pairingKey) return;
+
+    if(data.encryptedData != undefined) {
+        if(selfReceiveDataHash.has(data.encryptedData.hash())) {
+            selfReceiveDataHash.remove(data.encryptedData.hash());
+            return;
+        }
+    }
+
     if (data.encrypted === "true") {
         if ((global.globalOption.encryptionEnabled && global.globalOption.encryptionPassword != null) || global.globalOption.alwaysEncrypt) {
             let password = !global.globalOption.encryptionEnabled && global.globalOption.alwaysEncrypt ? Buffer.from(global.globalOption.userEmail).toString('base64') : global.globalOption.encryptionPassword
@@ -131,6 +141,7 @@ function processReception(data) {
                     }
                     break;
 
+                    
                 case "pair|response_device_list":
                     //Request Device Action
                     //Show device list here; give choice to user which device to pair
@@ -248,5 +259,6 @@ function isPairedDevice(device) {
 }
 
 module.exports = {
-    onMessageReceived
+    onMessageReceived,
+    selfReceiveDataHash
 }

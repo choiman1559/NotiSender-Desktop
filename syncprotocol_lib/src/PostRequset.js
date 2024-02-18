@@ -1,5 +1,6 @@
 const {encode} = require("./AESCrypto");
 const {encodeMac, generateTokenIdentifier} = require("./HmacCrypto");
+const { selfReceiveDataHash } = require("./Process");
 
 function postRestApi(data) {
     let head = {
@@ -65,6 +66,11 @@ function postRestApi(data) {
 }
 
 function postRestApiWithTopic(data) {
+
+    if(data.data.encryptedData != undefined) {
+        selfReceiveDataHash.add(data.data.encryptedData.hash())
+    }
+
     const FCM_API = "https://fcm.googleapis.com/fcm/send";
     const serverKey = global.globalOption.serverKey
     const contentType = "application/json";
