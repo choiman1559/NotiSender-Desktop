@@ -10,7 +10,7 @@ const {
     NOTIFICATION_SERVICE_ERROR,
     NOTIFICATION_RECEIVED,
     TOKEN_UPDATED,
-} = require('electron-push-receiver/src/constants')
+} = require('@cuj1559/electron-push-receiver/src/constants')
 
 function setConnectionOption(option) {
     global.globalOption = option
