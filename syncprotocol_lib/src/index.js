@@ -58,9 +58,14 @@ function initialize(option, action) {
         if(global.globalOption.enabled) onMessageReceived(serverNotificationPayload.data)
     })
 
-    const senderId = global.globalOption.senderId
     if (global.globalOption.printDebugLog) console.log('starting service and registering a client')
-    ipcRenderer.send(START_NOTIFICATION_SERVICE, senderId)
+    let firebaseHttpCredential = global.globalOption.firebaseHttpCredential
+    ipcRenderer.send(START_NOTIFICATION_SERVICE,
+        firebaseHttpCredential.appID,
+        firebaseHttpCredential.projectID,
+        firebaseHttpCredential.apiKey,
+        firebaseHttpCredential.vapidKey
+    )
 }
 
 module.exports = {

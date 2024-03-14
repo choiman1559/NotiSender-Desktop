@@ -17,6 +17,7 @@ const clipboard = require('electron').clipboard;
 const { getStorage, ref, getDownloadURL } = require("firebase/storage");
 const firebaseConfig = require("./credential/firebase-config.json");
 const firebaseCredential = require("./credential/service-account.json");
+const firebaseHttpCredential = require("./credential/firebase-credential.json");
 const fs = require("fs");
 
 const store = new Store()
@@ -45,6 +46,7 @@ function settingOption() {
     option.senderId = firebaseConfig.senderId
     option.serverKey = firebaseConfig.serverKey
     option.serverCredential = firebaseCredential
+    option.firebaseHttpCredential = firebaseHttpCredential
     option.identifierValue = machineIdSync(true)
     option.deviceName = require("os").hostname()
 

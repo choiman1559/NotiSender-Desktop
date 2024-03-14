@@ -57,6 +57,7 @@ class SplitDataObject extends Object {
 }
 
 function onMessageReceived(data) {
+    console.log(data)
     if(data.topic !== global.globalOption.pairingKey) return;
 
     if(data.encryptedData != null || data.encryptedData !== undefined) {

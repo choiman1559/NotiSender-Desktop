@@ -1,5 +1,5 @@
 const Store = require('electron-store');
-const {setup: setupPushReceiver} = require('electron-push-receiver')
+const {setup: setupPushReceiver} = require('@cuj1559/electron-push-receiver')
 
 function initConfig(mainWindow) {
     Store.initRenderer()

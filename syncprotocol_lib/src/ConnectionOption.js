@@ -15,6 +15,7 @@ class ConnectionOption extends Object {
     showAlreadyConnected
     serverKey
     serverCredential
+    firebaseHttpCredential
     receiveFindRequest
     allowRemovePairRemotely
     authWithHMac
