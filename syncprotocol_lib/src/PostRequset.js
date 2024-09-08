@@ -151,5 +151,6 @@ function getStringHash(str) {
 
 module.exports = {
     postRestApi,
-    getStringHash
+    getStringHash,
+    getGoogleAccessToken
 }

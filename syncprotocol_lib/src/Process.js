@@ -11,6 +11,7 @@ const {
     checkPairResultAndRegister,
     removePairedDevice
 } = require("./ProcessUtil");
+const {BackendConst, BackendProcess} = require("./BackendProcess");
 
 global.selfReceiveDataHash = new ArrayList();
 let splitDataList = new ArrayList();
@@ -221,6 +222,12 @@ function processReception(data) {
                     processSplitData(data)
                     break;
 
+                case BackendConst.SERVICE_TYPE_PACKET_PROXY:
+                    BackendProcess.receptionProxy(data, (resultData) => {
+                        processReception(resultData)
+                    })
+                    break
+
                 default:
                     if(type.startsWith("send") || type.startsWith("reception")) {
                         global.actionListener.onDefaultAction(data);
@@ -268,5 +275,6 @@ function isPairedDevice(device) {
 
 module.exports = {
     onMessageReceived,
+    processReception,
     selfReceiveDataHash
 }

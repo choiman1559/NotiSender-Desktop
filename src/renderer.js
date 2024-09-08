@@ -12,13 +12,13 @@ const store = new Store();
 
 const { initializeApp } = require("firebase/app")
 const firebaseConfig = require("./credential/firebase-config.json")
-const { getAuth, signInWithCredential, signOut, GoogleAuthProvider } = require("firebase/auth");
+const { getAuth, setPersistence, signInWithCredential, signOut, GoogleAuthProvider } = require("firebase/auth");
 const { getStorage, ref, uploadBytes } = require("firebase/storage");
 
 initializeApp(firebaseConfig);
 const auth = getAuth();
+setPersistence(auth, 'LOCAL').then(_ => {})
 const token = getPreferenceValue("login_token", "")
-
 let credential;
 if (token !== "") credential = GoogleAuthProvider.credential(token.id_token);
 
@@ -436,11 +436,15 @@ function onValueChanged(id, type) {
 }
 
 function initAuth() {
-    const isLogin = getPreferenceValue("login_token", "") !== ""
+    const loginToken = getPreferenceValue("login_token", "")
+    const isLogin = loginToken !== ""
     if (isLogin) {
         LoginInfoTitle.innerText = "Service Enabled"
         LoginInfoDetail.innerText = "Logined as " + getPreferenceValue("userEmail", "")
         LoginButton.innerText = "Logout"
+
+        credential = GoogleAuthProvider.credential(loginToken.id_token);
+        signInWithCredential(auth, credential).then((_) => { })
     } else {
         LoginInfoTitle.innerText = "Login Required"
         LoginInfoDetail.innerText = "Service will be unavailable until login"
@@ -634,7 +638,7 @@ document.addEventListener('drop', (event) => {
         })
     }
 });
- 
+
 document.addEventListener('dragover', (e) => {
     e.preventDefault();
     e.stopPropagation();

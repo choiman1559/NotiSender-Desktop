@@ -15,7 +15,7 @@
   "license": "LGPL-2.1",
   "devDependencies": {
     "@web/dev-server": "^0.1.35",
-    "electron": "29.1.4",
+    "electron": "32.0.2",
     "electron-builder": "^24.13.1"
   },
   "dependencies": {

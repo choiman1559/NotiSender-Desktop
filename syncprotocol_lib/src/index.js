@@ -1,5 +1,6 @@
 const {ipcRenderer} = require('electron')
 const {onMessageReceived} = require("./Process");
+const {getGoogleAccessToken} = require("./PostRequset");
 const Store = require('electron-store');
 const Listener = require('./Listener')
 const {getThisDeviceType} = require('./DeviceType')
@@ -28,21 +29,26 @@ function initialize(option, action) {
     Listener.init()
 
     ipcRenderer.on(NOTIFICATION_SERVICE_STARTED, (_, token) => {
-        if (global.globalOption.printDebugLog) console.log('service successfully started', token)
         global.deviceToken = token;
-
-        fetch('https://iid.googleapis.com/iid/v1/' + token + '/rel/topics/' + global.globalOption.pairingKey, {
-            method: 'POST',
-            headers: new Headers({
-                'Authorization': global.globalOption.serverKey
-            })
-        }).then(response => {
-            if (response.status < 200 || response.status >= 400) {
-                throw 'Error subscribing to topic: ' + response.status + ' - ' + response.text();
+        getGoogleAccessToken().then((resolve, _) => {
+            if (resolve != null) {
+                if (global.globalOption.printDebugLog) console.log('service successfully started\nOAuth: ', resolve)
+                fetch('https://iid.googleapis.com/iid/v1/' + token + '/rel/topics/' + global.globalOption.pairingKey, {
+                    method: 'POST',
+                    headers: new Headers({
+                        'Authorization': 'Bearer ' + resolve,
+                        "Content-Type": "application/json; UTF-8",
+                        "access_token_auth": true
+                    })
+                }).then(response => {
+                    if (response.status < 200 || response.status >= 400) {
+                        throw 'Error subscribing to topic: ' + response.status + ' - ' + response.text();
+                    }
+                    if (global.globalOption.printDebugLog) console.log('Subscribed to "' + global.globalOption.pairingKey + '"');
+                }).catch(error => {
+                    if (global.globalOption.printDebugLog) console.error(error);
+                })
             }
-            if (global.globalOption.printDebugLog) console.log('Subscribed to "' + global.globalOption.pairingKey + '"');
-        }).catch(error => {
-            if (global.globalOption.printDebugLog) console.error(error);
         })
     })
 
@@ -55,7 +61,7 @@ function initialize(option, action) {
     })
 
     ipcRenderer.on(NOTIFICATION_RECEIVED, (_, serverNotificationPayload) => {
-        if(global.globalOption.enabled) onMessageReceived(serverNotificationPayload.data)
+        if (global.globalOption.enabled) onMessageReceived(serverNotificationPayload.data)
     })
 
     if (global.globalOption.printDebugLog) console.log('starting service and registering a client')

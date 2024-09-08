@@ -100,11 +100,18 @@ const decode = async (plain, key) => {
     return decrypt(await decompressString(plain), key);
 };
 
+function shaAndHex(plainText) {
+    const hash = crypto.createHash('sha1');
+    hash.update(plainText, 'utf8');
+    return hash.digest('hex');
+}
+
 module.exports = {
     encode,
     decode,
     parseAESToken,
     getCombinedArray,
     compressString,
-    decompressString
+    decompressString,
+    shaAndHex
 };
