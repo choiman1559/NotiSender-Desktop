@@ -9,14 +9,15 @@ const dialog = electron.dialog
 const path = require('path')
 const url = require('url')
 const Store = require('electron-store')
-const { initConfig } = require("syncprotocol/src/Store");
-const { download } = require("electron-dl")
+const {initConfig} = require("syncprotocol/src/Store");
+const {download} = require("electron-dl")
 
 const firebaseConfig = require("./credential/firebase-config.json");
-const { decompressString } = require("syncprotocol/src/AESCrypto");
+const {decompressString} = require("syncprotocol/src/AESCrypto");
 const fs = require("fs");
+const {NotificationData} = require("./NotificationData");
 const ElectronGoogleOAuth2 = require('@getstation/electron-google-oauth2').default;
-const myApiOauth = new ElectronGoogleOAuth2(firebaseConfig.CLIENT_ID, firebaseConfig.CLIENT_SECRET, firebaseConfig.SCOPES_LIST, { successRedirectURL: "https://choiman1559.github.io/NotiSender-Desktop/login_completed.html" });
+const myApiOauth = new ElectronGoogleOAuth2(firebaseConfig.CLIENT_ID, firebaseConfig.CLIENT_SECRET, firebaseConfig.SCOPES_LIST, {successRedirectURL: "https://choiman1559.github.io/NotiSender-Desktop/login_completed.html"});
 
 let mainWindow
 let isQuiting
@@ -149,7 +150,7 @@ if (!gotTheLock) {
 
         const refreshToken = store.get("login_token")
         if (refreshToken !== null) {
-            myApiOauth.setTokens({ refresh_token: refreshToken });
+            myApiOauth.setTokens({refresh_token: refreshToken});
         }
 
         ipcMain.on("login_request", () => {
@@ -160,13 +161,18 @@ if (!gotTheLock) {
         })
 
         ipcMain.on("notification_image_required", (_, map) => {
-            const imageRaw = map.icon
+            const notificationData = NotificationData.parseFrom(map.notification_data)
+            let imageRaw = notificationData.bigIcon
+            if(imageRaw === "") {
+                imageRaw = notificationData.smallIcon
+            }
+
             decompressString(imageRaw).then((decompressed) => {
                 let imagePath = app.getPath('userData') + "/imageCache/"
-                fs.mkdir(imagePath, { recursive: true }, () => {
+                fs.mkdir(imagePath, {recursive: true}, () => {
                     const imageBuffer = Buffer.from(decompressed, 'base64');
                     let imageFile = app.getPath('userData') + "/imageCache/" + imageRaw.slice(0, 16) + ".png";
-                    fs.writeFile(imageFile, imageBuffer, { flag: "wx" }, () => {
+                    fs.writeFile(imageFile, imageBuffer, {flag: "wx"}, () => {
                         mainWindow.webContents.send("notification_image_saved", map, imageFile);
                     });
                 })
@@ -179,7 +185,7 @@ if (!gotTheLock) {
         })
 
         ipcMain.on("file_select_dialog", () => {
-            dialog.showOpenDialog({ properties: ['openFile'] }).then(function (response) {
+            dialog.showOpenDialog({properties: ['openFile']}).then(function (response) {
                 if (!response.canceled) {
                     mainWindow.webContents.send("file_select_dialog_result", response.filePaths[0]);
                 }

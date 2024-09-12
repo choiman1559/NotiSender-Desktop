@@ -19,6 +19,7 @@ const firebaseConfig = require("./credential/firebase-config.json");
 const firebaseCredential = require("./credential/service-account.json");
 const firebaseHttpCredential = require("./credential/firebase-credential.json");
 const fs = require("fs");
+const {NotificationData} = require("./NotificationData");
 
 const store = new Store()
 function getPreferenceValue(key, defValue) {
@@ -40,6 +41,7 @@ function settingOption() {
     option.pairingKey = getPreferenceValue("pairingKey", "test100")
     option.authWithHMac = getPreferenceValue("useHMAC", false)
     option.alwaysEncrypt = getPreferenceValue("alwaysEncrypt", true)
+    option.enforceBackendProxy = getPreferenceValue("enforceBackendProxy", false)
     option.userEmail = getPreferenceValue("userEmail", "")
 
     //Non-Customizable options
@@ -241,8 +243,11 @@ function init() {
     Protocol.initialize(settingOption(), new Actions())
 }
 
-function changeOption() {
+function changeOption(needReset) {
     setConnectionOption(settingOption())
+    if(needReset !== undefined && needReset) {
+        init()
+    }
 }
 
 ipcRenderer.on("download_complete", (_, file) => {
@@ -254,10 +259,16 @@ ipcRenderer.on("download_complete", (_, file) => {
 });
 
 function sendNotification(map) {
-    console.log(map)
-    if(map.icon === undefined || map.icon === "none") {
-        let title = map.title
-        let content = map.message
+    const notificationData = NotificationData.parseFrom(map.notification_data);
+    if(global.globalOption.printDebugLog) console.log(notificationData)
+
+    function isIconBlank(icon) {
+        return icon === undefined || icon === "" || icon === "none"
+    }
+
+    if(isIconBlank(notificationData.bigIcon) && isIconBlank(notificationData.smallIcon)) {
+        let title = notificationData.title
+        let content = notificationData.message
 
         let notification = new Notification(title, {
             body: content,
@@ -272,8 +283,9 @@ function sendNotification(map) {
 }
 
 ipcRenderer.on("notification_image_saved", (_, map, image) => {
-    let title = map.title
-    let content = map.message
+    const notificationData = NotificationData.parseFrom(map.notification_data)
+    let title = notificationData.title
+    let content = notificationData.message
 
     let notification = new Notification(title, {
         body: content,

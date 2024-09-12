@@ -1,5 +1,5 @@
 const {shaAndHex} = require("./AESCrypto");
-const { getAuth } = require("firebase/auth");
+const {getAuth} = require("firebase/auth");
 
 class BackendConst {
     static SERVICE_TYPE_PACKET_PROXY = "type_packet_proxy"
@@ -54,6 +54,26 @@ class BackendResult {
 }
 
 class BackendProcess {
+    static postProxy(data, hash, callback) {
+        let sendDeviceId = data[BackendConst.KEY_DEVICE_ID]
+        let dataHashKey = shaAndHex(sendDeviceId + hash)
+
+        let serverBody = {};
+        serverBody[BackendConst.KEY_ACTION_TYPE] = BackendConst.REQUEST_POST_SHORT_TERM_DATA
+        serverBody[BackendConst.KEY_DATA_KEY] = dataHashKey
+        serverBody[BackendConst.KEY_EXTRA_DATA] = JSON.stringify(data)
+
+        BackendProcess.sendPacket(BackendConst.SERVICE_TYPE_PACKET_PROXY, serverBody, result => {
+            if (result.isResultOk()) {
+                callback(true)
+            } else {
+                callback(false)
+                if (global.globalOption.printDebugLog)
+                    console.log('Error while processing proxy: ' + result.getErrorCause())
+            }
+        })
+    }
+
     static receptionProxy(data, callback) {
         let sendDeviceId = data[BackendConst.KEY_DEVICE_ID]
         let dataHashKey = shaAndHex(sendDeviceId + data[BackendConst.KEY_DATA_KEY])
@@ -65,7 +85,7 @@ class BackendProcess {
         serverBody[BackendConst.KEY_DATA_KEY] = dataHashKey
 
         BackendProcess.sendPacket(BackendConst.SERVICE_TYPE_PACKET_PROXY, serverBody, result => {
-            if(result.isResultOk()) {
+            if (result.isResultOk()) {
                 callback(JSON.parse(result.getExtraData()))
             } else if (global.globalOption.printDebugLog) console.log('Error while processing proxy: ' + result.getErrorCause())
         })
@@ -76,7 +96,7 @@ class BackendProcess {
         data[BackendConst.KEY_DEVICE_NAME] = global.globalOption.deviceName
         data[BackendConst.KEY_DEVICE_ID] = global.globalOption.identifierValue
 
-        String.format = function() {
+        String.format = function () {
             let s = arguments[0];
             for (let i = 0; i < arguments.length - 1; i++) {
                 let reg = new RegExp("\\{" + i + "\\}", "gm");
@@ -89,7 +109,7 @@ class BackendProcess {
             global.globalOption.printDebugLog ? BackendConst.API_DEBUG_ROUTE : BackendConst.API_PUBLIC_ROUTE, type)
 
         const auth = getAuth();
-        auth.currentUser.getIdToken( true).then(function(idToken) {
+        auth.currentUser.getIdToken(true).then(function (idToken) {
             if (idToken != null) {
                 fetch(uri, {
                     body: JSON.stringify(data),
@@ -101,11 +121,11 @@ class BackendProcess {
                 }).then(async response => {
                     callback(BackendResult.parseFrom(JSON.parse(await response.text())))
                 }).catch(error => {
-                    if(global.globalOption.printDebugLog) console.log(error)
+                    if (global.globalOption.printDebugLog) console.log(error)
                 })
             }
-        }).catch(function(error) {
-            if(global.globalOption.printDebugLog) console.log(error)
+        }).catch(function (error) {
+            if (global.globalOption.printDebugLog) console.log(error)
         });
     }
 }

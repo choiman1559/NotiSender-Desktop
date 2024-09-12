@@ -20,6 +20,7 @@ class ConnectionOption extends Object {
     allowRemovePairRemotely
     authWithHMac
     alwaysEncrypt
+    enforceBackendProxy
 }
 
 module.exports = ConnectionOption

@@ -239,6 +239,13 @@
                     <span class="mdl-switch__label">Check data integrity using HMAC</span>
                 </label>
 
+                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="enforceBackendProxy"
+                       style="margin-top: 8px">
+                    <input type="checkbox" id="enforceBackendProxy" class="mdl-switch__input"
+                           onchange="onValueChanged('enforceBackendProxy','checked')">
+                    <span class="mdl-switch__label">Enforce backend proxy</span>
+                </label>
+
                 <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="deadlineTime"
                        style="margin-top: 8px">
                     <input type="checkbox" id="deadlineTime" class="mdl-switch__input"
@@ -390,6 +397,25 @@
                 <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored"
                         id="remoteRunButton">
                     <i class="material-icons">settings_remote</i>Remote Run
+                </button>
+            </div>
+        </div>
+
+        <div id="loginTokenExpireModal" class="modal">
+            <div class="modal-content" style="text-align: center">
+                <label style="font-size: 20px;font-weight: bold" id="loginTokenExpireTitle"></label>
+
+                <br>
+                <br>
+
+                <label id="loginTokenExpireText" style="text-align: start"></label>
+
+                <br>
+                <br>
+
+                <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored"
+                        id="loginTokenExpireButton" onclick="onRefreshAuth()">
+                    <i class="material-icons">login</i>Login
                 </button>
             </div>
         </div>

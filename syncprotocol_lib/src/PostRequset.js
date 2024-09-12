@@ -2,6 +2,7 @@ const {encode} = require("./AESCrypto");
 const {encodeMac, generateTokenIdentifier} = require("./HmacCrypto");
 const {google} = require("googleapis");
 const ArrayList = require("arraylist-js");
+const {BackendProcess, BackendConst} = require("./BackendProcess");
 
 function postRestApi(data) {
     let head = {
@@ -80,9 +81,27 @@ function cleanUpAndPostData(head) {
         dataToSend[keyList[keyIndex]] = head.data[keyList[keyIndex]] + ""
     }
 
-    head.data = dataToSend;
-    head = { "message" : head }
-    postRestApiWithTopic(head)
+    const stringifyData = JSON.stringify(dataToSend)
+    const dataHash = getStringHash(stringifyData)
+    if(stringifyData.length > 1024 || global.globalOption.enforceBackendProxy) {
+        BackendProcess.postProxy(dataToSend, dataHash, (success) => {
+            if(success) {
+                let proxyMetadata = {};
+                proxyMetadata[BackendConst.KEY_DEVICE_NAME] = global.globalOption.deviceName
+                proxyMetadata[BackendConst.KEY_DEVICE_ID] = global.globalOption.identifierValue
+                proxyMetadata[BackendConst.KEY_DATA_KEY] = dataHash.toString();
+                proxyMetadata["type"] = BackendConst.SERVICE_TYPE_PACKET_PROXY;
+
+                head.data = proxyMetadata;
+                head = {"message": head}
+                postRestApiWithTopic(head)
+            }
+        })
+    } else {
+        head.data = dataToSend;
+        head = {"message": head}
+        postRestApiWithTopic(head)
+    }
 }
 
 function postRestApiWithTopic(head) {

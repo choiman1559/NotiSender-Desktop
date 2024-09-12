@@ -43,6 +43,7 @@ const {
 const { Device } = require("syncprotocol/src/Device");
 const { DeviceType, DEVICE_TYPE_UNKNOWN } = require("syncprotocol/src/DeviceType");
 const { postRestApi } = require("syncprotocol/src/PostRequset");
+const {NotificationData} = require("./NotificationData");
 
 const isDesignDebugMode = false
 if (!isDesignDebugMode) init()
@@ -82,11 +83,16 @@ const printDebugLog = getElement("printDebugLog")
 const showAlreadyConnected = getElement("showAlreadyConnected")
 const allowRemovePairRemotely = getElement("allowRemovePairRemotely")
 const startWhenBoot = getElement("startWhenBoot")
+const enforceBackendProxy = getElement("enforceBackendProxy")
 
 const version = getElement("version")
 const LoginInfoDetail = getElement("LoginInfoDetail")
 const LoginInfoTitle = getElement("LoginInfoTitle")
 const LoginButton = getElement("LoginButton")
+
+const loginTokenExpireModal = getElement("loginTokenExpireModal")
+const loginTokenExpireText = getElement("loginTokenExpireText")
+const loginTokenExpireTitle = getElement("loginTokenExpireTitle")
 
 const notificationDetailModal = getElement("notificationDetailModal")
 const notificationDetailTitle = getElement("notificationDetailTitle")
@@ -390,6 +396,7 @@ function onModalCloseClick() {
     deviceDetail.style.display = "none"
     pairModal.style.display = "none"
     notificationDetailModal.style.display = "none"
+    loginTokenExpireModal.style.display = "none"
 }
 
 window.onclick = function (event) {
@@ -423,6 +430,7 @@ printDebugLog.checked = getPreferenceValue("printDebugLog", false)
 showAlreadyConnected.checked = getPreferenceValue("showAlreadyConnected", false)
 allowRemovePairRemotely.checked = getPreferenceValue("allowRemovePairRemotely", true)
 startWhenBoot.checked = getPreferenceValue("startWhenBoot", true)
+enforceBackendProxy.checked = getPreferenceValue("enforceBackendProxy", false)
 
 showPassword.addEventListener("click", function () {
     this.classList.toggle("fa-eye-slash")
@@ -436,6 +444,13 @@ function onValueChanged(id, type) {
 }
 
 function initAuth() {
+    function showLoginModal(title, message) {
+        setPanelActive(1)
+        loginTokenExpireTitle.innerText = title
+        loginTokenExpireText.innerText = message
+        loginTokenExpireModal.style.display = "block"
+    }
+
     const loginToken = getPreferenceValue("login_token", "")
     const isLogin = loginToken !== ""
     if (isLogin) {
@@ -443,13 +458,25 @@ function initAuth() {
         LoginInfoDetail.innerText = "Logined as " + getPreferenceValue("userEmail", "")
         LoginButton.innerText = "Logout"
 
-        credential = GoogleAuthProvider.credential(loginToken.id_token);
-        signInWithCredential(auth, credential).then((_) => { })
+        if(Date.now() >= loginToken.expiry_date) {
+            resetAuth()
+            showLoginModal("Login Session Expired", "Your account is log-out. Please login again.")
+        } else {
+            credential = GoogleAuthProvider.credential(loginToken.id_token);
+            signInWithCredential(auth, credential).then((_) => { })
+        }
     } else {
         LoginInfoTitle.innerText = "Login Required"
         LoginInfoDetail.innerText = "Service will be unavailable until login"
         LoginButton.innerText = "Login"
+        showLoginModal("Login Required", "Account is not connected to application.")
     }
+}
+
+function onRefreshAuth() {
+    onAuth()
+    onModalCloseClick()
+    setPanelActive(3)
 }
 
 function onAuth() {
@@ -458,17 +485,20 @@ function onAuth() {
     } else {
         signOut(auth).then(() => {
             createToastNotification('Logout Succeeded', 'Okay')
-            store.delete("pairingKey")
-            store.delete("userEmail")
-            store.delete("login_token")
-
+            resetAuth()
             initAuth()
-            changeOption()
         }).catch((error) => {
             console.log(error)
             createToastNotification('Logout failed: ' + error.errorMessage, 'Okay')
         });
     }
+}
+
+function resetAuth() {
+    store.delete("pairingKey")
+    store.delete("userEmail")
+    store.delete("login_token")
+    changeOption(false)
 }
 
 initAuth()
@@ -484,7 +514,7 @@ ipcRenderer.on("login_complete", (_, token) => {
 
             initAuth()
             createToastNotification('Login Succeeded', 'Okay')
-            changeOption()
+            changeOption(true)
         }).catch((error) => {
             const errorMessage = error.message;
             console.log(error)
@@ -517,15 +547,18 @@ ipcRenderer.on("notification_detail", (_, map) => {
 
     switch (map.type) {
         case "send|normal":
+            const notificationData = NotificationData.parseFrom(map.notification_data);
+            let date = new Date(notificationData.postTime);
+
             smsReplyMessageContainer.style.display = "none"
             smsReplyMessageValue.value = ""
-            notificationDetailTitle.innerText = map.appname
+            notificationDetailTitle.innerText = notificationData.appName
             remoteRunButton.innerText = "Remote Run"
             notificationDetailText.innerHTML =
-                "<b>Title: </b>" + map.title + "<br>" +
-                "<b>Content: </b>" + map.message + "<br>" +
+                "<b>Title: </b>" + notificationData.title + "<br>" +
+                "<b>Content: </b>" + notificationData.message + "<br>" +
                 "<b>Device: </b>" + map.device_name + "<br>" +
-                "<b>Posted Time: </b>" + map.date + "<br>"
+                "<b>Posted Time: </b>" + date.toLocaleDateString("en-US") + ' ' + date.toLocaleTimeString("en-US") + "<br>"
             break;
 
         case "send|sms":
@@ -563,7 +596,7 @@ function onClickRemoteRunButton(map) {
             onModalCloseClick()
             data = {
                 "type": "reception|normal",
-                "package": map.package,
+                "package": NotificationData.parseFrom(map.notification_data).appPackage,
                 "device_name": global.globalOption.deviceName,
                 "device_id": global.globalOption.identifierValue,
                 "send_device_name": map.device_name,
