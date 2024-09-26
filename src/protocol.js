@@ -131,6 +131,12 @@ class Actions extends PairAction {
                 case "PRESENTATION_KEY_PRESSED":
                     keySender.sendKey(actionArgs[0])
                     break;
+
+                case "toggle_service":
+                    const changedValue = actionArgs[0] === "true"
+                    store.set("notificationToggle", changedValue)
+                    dataSetChangeListener.emit("notificationToggle", changedValue)
+                    break;
             }
         }
     }
@@ -142,7 +148,10 @@ class Actions extends PairAction {
             case "battery_info":
                 (async () => {
                     const {level, charging} = await battery();
-                    dataToSend = (level * 100) + "|" + charging + "|false"
+                    let notificationEnabled = store.get("notificationToggle")
+                    if(notificationEnabled == null || notificationEnabled === "") notificationEnabled = "true"
+
+                    dataToSend = (level * 100) + "|" + charging + "|false|" + notificationEnabled
                     responseDataRequest(new Device(map.device_name, map.device_id), map.request_data, dataToSend);
                     //TODO: What about desktop devices?
                 })();
@@ -186,6 +195,8 @@ class Actions extends PairAction {
 
     onDefaultAction(map) {
         super.onDefaultAction(map);
+        let deviceToFind = new Device(map.device_name, map.device_id)
+
         if(getPreferenceValue("deadlineTime", false) && map.date !== undefined) {
             const deadlineTimeInMin = getPreferenceValue("deadlineTimeValue", -1)
             const nowInMill = Date.now()
@@ -197,7 +208,6 @@ class Actions extends PairAction {
         if (store.has("paired_list")) {
             let value = JSON.parse(store.get("paired_list"))
             let isPaired = false;
-            let deviceToFind = new Device(map.device_name, map.device_id)
 
             if (value.length > 0) for (let i = 0; i < value.length; i++) {
                 const arr = value[i].split("|")
@@ -215,7 +225,10 @@ class Actions extends PairAction {
 
         switch (map.type) {
             case "send|normal":
-                sendNotification(map);
+                if(getPreferenceValue("notificationToggle", true)
+                    && !store.get("notificationBlackList", []).includes(deviceToFind.deviceId)) {
+                    sendNotification(map);
+                }
                 break;
 
             case "send|sms":

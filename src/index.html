@@ -167,16 +167,16 @@
                             <span class="mdl-switch__label">Service On/Off</span>
                         </label>
 
-                        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="enabled">
+                        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="notificationToggle">
+                            <input type="checkbox" id="notificationToggle" class="mdl-switch__input"
+                                   onchange="onValueChanged('notificationToggle','checked')">
+                            <span class="mdl-switch__label">Notification Mirroring On/Off</span>
+                        </label>
+
+                        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="telephony">
                             <input type="checkbox" id="telephony" class="mdl-switch__input"
                                    onchange="onValueChanged('telephony','checked')">
                             <span class="mdl-switch__label">Telephony Sync On/Off</span>
-                        </label>
-
-                        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="enabled">
-                            <input type="checkbox" id="media" class="mdl-switch__input"
-                                   onchange="onValueChanged('media','checked')">
-                            <span class="mdl-switch__label">Media Sync On/Off</span>
                         </label>
                     </div>
                 </div>
@@ -349,6 +349,25 @@
                         onclick="onFindButtonClick()">
                     <i class="material-icons">find_in_page</i>Find
                 </button>
+
+                <br>
+                <br>
+
+                <div id="deviceDetailPrefsContainer" style="bottom: 0; width: 100%; text-align: center; margin-top: 20px; display: none">
+                    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="remoteServiceToggle"
+                           style="margin-top: 8px">
+                        <input type="checkbox" id="remoteServiceToggle" class="mdl-switch__input"
+                               onchange="">
+                        <span class="mdl-switch__label">Remote Service On/Off</span>
+                    </label>
+
+                    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="blockNotification"
+                           style="margin-top: 8px">
+                        <input type="checkbox" id="blockNotification" class="mdl-switch__input"
+                               onchange="">
+                        <span class="mdl-switch__label">Block Notification on this device</span>
+                    </label>
+                </div>
 
                 <br>
                 <br>

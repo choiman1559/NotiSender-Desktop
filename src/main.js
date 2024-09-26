@@ -184,6 +184,10 @@ if (!gotTheLock) {
             mainWindow.webContents.send("notification_detail", map);
         })
 
+        ipcMain.on("show_window", (_, map) => {
+            mainWindow.show()
+        })
+
         ipcMain.on("file_select_dialog", () => {
             dialog.showOpenDialog({properties: ['openFile']}).then(function (response) {
                 if (!response.canceled) {

@@ -68,11 +68,16 @@ const pairModalList = getElement("pairModalList")
 const pairModal = getElement("pairModal")
 const pairProgress = getElement("pairProgress")
 
+const deviceDetailPrefsContainer = getElement("deviceDetailPrefsContainer")
+const remoteServiceToggle = getElement("remoteServiceToggle")
+const blockNotification = getElement("blockNotification")
+
 const batteryContainer = getElement("batteryContainer")
 const batteryIcon = getElement("batteryIcon")
 const batteryText = getElement("batteryText")
 
 const enabled = getElement("enabled")
+const notificationToggle = getElement("notificationToggle")
 const encryptionEnabled = getElement("encryptionEnabled")
 const encryptionPassword = getElement("encryptionPassword")
 const showPassword = getElement("showPassword")
@@ -311,6 +316,8 @@ function onDeviceItemClick(index) {
         '                    </span><br>'
 
     deviceDetail.style.display = "block"
+    deviceDetailPrefsContainer.style.display = "block"
+    remoteServiceToggle.parentElement.style.display = "none"
     batteryContainer.style.display = "none"
 
     requestData(modalSelectedDevice, "battery_info")
@@ -324,6 +331,35 @@ function onDeviceItemClick(index) {
             let batteryCalculatedLevel = Math.floor(dataArray[0] / 14.28)
             if (batteryCalculatedLevel >= 7) batteryIcon.innerText = "battery_full"
             else batteryIcon.innerText = "battery_" + batteryCalculatedLevel + "_bar"
+        }
+
+        if(store.get("notificationBlackList", []).includes(modalSelectedDevice.deviceId)) {
+            blockNotification.parentElement.classList.add("is-checked")
+            blockNotification.checked = true
+        }
+
+        blockNotification.onchange = () => {
+            let notificationBlackList = store.get("notificationBlackList", [])
+            if(blockNotification.checked) {
+                if(!notificationBlackList.includes(modalSelectedDevice.deviceId)) {
+                    notificationBlackList.push(modalSelectedDevice.deviceId)
+                }
+            } else if(notificationBlackList.includes(modalSelectedDevice.deviceId)) {
+                notificationBlackList = notificationBlackList.filter(item => item !== modalSelectedDevice.deviceId)
+            }
+            store.set("notificationBlackList", notificationBlackList)
+        }
+
+        if(dataArray.length >= 4) {
+            if("true" === dataArray[3]) {
+                remoteServiceToggle.parentElement.classList.add("is-checked")
+                remoteServiceToggle.checked = true
+            }
+
+            remoteServiceToggle.parentElement.style.display = "block"
+            remoteServiceToggle.onchange = () => {
+                requestAction(modalSelectedDevice, "toggle_service", remoteServiceToggle.checked.toString())
+            }
         }
     })
 }
@@ -419,6 +455,7 @@ function getPreferenceValue(key, defValue) {
 }
 
 enabled.checked = getPreferenceValue("enabled", true)
+notificationToggle.checked = getPreferenceValue("notificationToggle", true)
 encryptionEnabled.checked = getPreferenceValue("encryptionEnabled", false)
 alwaysEncrypt.checked = getPreferenceValue("alwaysEncrypt", true)
 useHMAC.checked = getPreferenceValue("useHMAC", false)
@@ -438,6 +475,15 @@ showPassword.addEventListener("click", function () {
     encryptionPassword.setAttribute("type", type)
 })
 
+dataSetChangeListener.on("notificationToggle", function (value) {
+    notificationToggle.checked = value
+    if(value) {
+        notificationToggle.parentElement.classList.add("is-checked")
+    } else {
+        notificationToggle.parentElement.classList.remove("is-checked")
+    }
+})
+
 function onValueChanged(id, type) {
     store.set(id, type === "checked" ? getElement(id).checked : getElement(id).value)
     changeOption()
@@ -445,7 +491,9 @@ function onValueChanged(id, type) {
 
 function initAuth() {
     function showLoginModal(title, message) {
+        ipcRenderer.send("show_window")
         setPanelActive(1)
+
         loginTokenExpireTitle.innerText = title
         loginTokenExpireText.innerText = message
         loginTokenExpireModal.style.display = "block"
@@ -541,6 +589,7 @@ ipcRenderer.on("notification_detail", (_, map) => {
     const nickname = (map.nickname === undefined || map.nickname === '' ? "" : " (" + map.nickname + ")")
     setPanelActive(1)
     notificationDetailModal.style.display = "block"
+    deviceDetailPrefsContainer.style.display = "none"
     remoteRunButton.onclick = function () {
         onClickRemoteRunButton(map)
     }
