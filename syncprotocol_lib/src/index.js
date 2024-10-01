@@ -8,6 +8,7 @@ const {getThisDeviceType} = require('./DeviceType')
 const {
     START_NOTIFICATION_SERVICE,
     NOTIFICATION_SERVICE_STARTED,
+    NOTIFICATION_SERVICE_RESTARTED,
     NOTIFICATION_SERVICE_ERROR,
     NOTIFICATION_RECEIVED,
     TOKEN_UPDATED,
@@ -28,7 +29,7 @@ function initialize(option, action) {
     global.thisDeviceType = getThisDeviceType()
     Listener.init()
 
-    ipcRenderer.on(NOTIFICATION_SERVICE_STARTED, (_, token) => {
+    function initFcmToken(token) {
         global.deviceToken = token;
         getGoogleAccessToken().then((resolve, _) => {
             if (resolve != null) {
@@ -50,6 +51,14 @@ function initialize(option, action) {
                 })
             }
         })
+    }
+
+    ipcRenderer.on(NOTIFICATION_SERVICE_STARTED, (_, token) => {
+        initFcmToken(token)
+    })
+
+    ipcRenderer.on(NOTIFICATION_SERVICE_RESTARTED, (_, token) => {
+        initFcmToken(token)
     })
 
     ipcRenderer.on(NOTIFICATION_SERVICE_ERROR, (_, error) => {
