@@ -45,9 +45,6 @@ const { DeviceType, DEVICE_TYPE_UNKNOWN } = require("syncprotocol/src/DeviceType
 const { postRestApi } = require("syncprotocol/src/PostRequset");
 const {NotificationData} = require("./NotificationData");
 
-const isDesignDebugMode = false
-if (!isDesignDebugMode) init()
-
 const taskSelect = getElement('TaskSelection')
 const deviceSelect = getElement("DeviceSelection")
 
@@ -511,7 +508,10 @@ function initAuth() {
             showLoginModal("Login Session Expired", "Your account is log-out. Please login again.")
         } else {
             credential = GoogleAuthProvider.credential(loginToken.id_token);
-            signInWithCredential(auth, credential).then((_) => { })
+            signInWithCredential(auth, credential).then((_) => {
+                const isDesignDebugMode = false
+                if (!isDesignDebugMode) init()
+            })
         }
     } else {
         LoginInfoTitle.innerText = "Login Required"
