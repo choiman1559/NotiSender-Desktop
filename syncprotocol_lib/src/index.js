@@ -19,6 +19,7 @@ function setConnectionOption(option) {
 }
 
 let isListenerRegistered = false
+let lastPairingKey = ""
 
 function initialize(option, action) {
     console.log('Start initialize protocol')
@@ -89,6 +90,9 @@ function initialize(option, action) {
         )
 
         isListenerRegistered = true
+    } else if(global.globalOption.pairingKey !== lastPairingKey) {
+        initFcmToken(global.deviceToken)
+        lastPairingKey = global.globalOption.pairingKey
     }
 }
 
