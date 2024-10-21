@@ -6,7 +6,7 @@
   "main": "./src/main.js",
   "scripts": {
     "start": "electron .",
-    "testStart": "rm -rf ./node_modules/syncprotocol && npm install file:syncprotocol_lib && electron .",
+    "testStart": "rm -rf ./node_modules/syncprotocol && npm install file:syncprotocol_lib && electron . --inspect=8228",
     "deploy": "electron-builder build",
     "deployWin": "electron-builder --win --x64"
   },

@@ -18,6 +18,9 @@ function setConnectionOption(option) {
     global.globalOption = option
 }
 
+let isListenerRegistered = false
+let lastPairingKey = ""
+
 function initialize(option, action) {
     console.log('Start initialize protocol')
     global.globalOption = option
@@ -53,34 +56,44 @@ function initialize(option, action) {
         })
     }
 
-    ipcRenderer.on(NOTIFICATION_SERVICE_STARTED, (_, token) => {
-        initFcmToken(token)
-    })
-
-    ipcRenderer.on(NOTIFICATION_SERVICE_RESTARTED, (_, token) => {
-        initFcmToken(token)
-    })
-
-    ipcRenderer.on(NOTIFICATION_SERVICE_ERROR, (_, error) => {
-        if (global.globalOption.printDebugLog) console.log('notification error', error)
-    })
-
-    ipcRenderer.on(TOKEN_UPDATED, (_, token) => {
-        if (global.globalOption.printDebugLog) console.log('token updated', token)
-    })
-
-    ipcRenderer.on(NOTIFICATION_RECEIVED, (_, serverNotificationPayload) => {
-        if (global.globalOption.enabled) onMessageReceived(serverNotificationPayload.data)
-    })
-
     if (global.globalOption.printDebugLog) console.log('starting service and registering a client')
-    let firebaseHttpCredential = global.globalOption.firebaseHttpCredential
-    ipcRenderer.send(START_NOTIFICATION_SERVICE,
-        firebaseHttpCredential.appID,
-        firebaseHttpCredential.projectID,
-        firebaseHttpCredential.apiKey,
-        firebaseHttpCredential.vapidKey
-    )
+    if(!isListenerRegistered) {
+        ipcRenderer.on(NOTIFICATION_SERVICE_STARTED, (_, token) => {
+            initFcmToken(token)
+        })
+
+        ipcRenderer.on(NOTIFICATION_SERVICE_RESTARTED, (_, token) => {
+            initFcmToken(token)
+        })
+
+        ipcRenderer.on(NOTIFICATION_SERVICE_ERROR, (_, error) => {
+            if (global.globalOption.printDebugLog) {
+                console.log('notification error', error)
+                throw error
+            }
+        })
+
+        ipcRenderer.on(TOKEN_UPDATED, (_, token) => {
+            if (global.globalOption.printDebugLog) console.log('token updated', token)
+        })
+
+        ipcRenderer.on(NOTIFICATION_RECEIVED, (_, serverNotificationPayload) => {
+            if (global.globalOption.enabled) onMessageReceived(serverNotificationPayload.data)
+        })
+
+        let firebaseHttpCredential = global.globalOption.firebaseHttpCredential
+        ipcRenderer.send(START_NOTIFICATION_SERVICE,
+            firebaseHttpCredential.appID,
+            firebaseHttpCredential.projectID,
+            firebaseHttpCredential.apiKey,
+            firebaseHttpCredential.vapidKey
+        )
+
+        isListenerRegistered = true
+    } else if(global.globalOption.pairingKey !== lastPairingKey) {
+        initFcmToken(global.deviceToken)
+        lastPairingKey = global.globalOption.pairingKey
+    }
 }
 
 module.exports = {

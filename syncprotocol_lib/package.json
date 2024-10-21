@@ -1,6 +1,6 @@
 {
   "name": "syncprotocol",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "main": "src/index.js",
   "author": "Choiman1559",
   "license": "LGPL-2.1",
