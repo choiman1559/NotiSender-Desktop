@@ -39,7 +39,7 @@ function createWindow() {
         maxHeight: windowHeight,
         height: windowHeight,
 
-        show: false,
+        show: false, //TODO: false on release
         maximizable: false,
         icon: iconPath,
         webPreferences: {

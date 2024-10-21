@@ -20,6 +20,7 @@ const firebaseCredential = require("./credential/service-account.json");
 const firebaseHttpCredential = require("./credential/firebase-credential.json");
 const fs = require("fs");
 const {NotificationData} = require("./NotificationData");
+const {processLiveNoti} = require("./liveNoi/liveNotiProcess");
 
 const store = new Store()
 function getPreferenceValue(key, defValue) {
@@ -174,6 +175,10 @@ class Actions extends PairAction {
     onFindRequest() {
         super.onFindRequest();
         //Ignore for now
+    }
+
+    onLiveNotification(map) {
+        processLiveNoti(map);
     }
 
     showPairChoiceAction(device) {

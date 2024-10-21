@@ -1,5 +1,4 @@
 class NotificationData {
-
     postTime;
     key;
     appPackage;
@@ -23,15 +22,40 @@ class NotificationData {
         data.title = obj.title
         data.message = obj.message
         data.priority = obj.priority
-        data.actions = obj.actions
         data.smallIcon = obj.smallIcon
         data.bigIcon = obj.bigIcon
         data.bigPicture = obj.bigPicture
+
+        data.actions = []
+        let actionArray = JSON.parse(obj.actions)
+        for(let actionRawItem in actionArray) {
+            data.actions.push(NotificationAction.parseFrom(actionRawItem))
+        }
+
+        return data
+    }
+}
+
+class NotificationAction {
+    actionName;
+    isInputAction;
+    inputResultKey;
+    inputLabel;
+
+    static parseFrom(raw) {
+        let obj = (raw instanceof Object) ? raw : JSON.parse(raw)
+        let data = new NotificationAction()
+
+        data.actionName = obj.actionName
+        data.isInputAction = obj.isInputAction
+        data.inputResultKey = obj.inputResultKey
+        data.inputLabel = obj.inputLabel
 
         return data
     }
 }
 
 module.exports = {
-    NotificationData
+    NotificationData,
+    NotificationAction
 }

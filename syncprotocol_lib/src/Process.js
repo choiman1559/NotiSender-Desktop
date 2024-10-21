@@ -218,6 +218,12 @@ function processReception(data) {
                     }
                     break;
 
+                case "pair|live_notification":
+                    if (isTargetDevice(data) && isPairedDevice(device)) {
+                        global.actionListener.onLiveNotification(data)
+                    }
+                    break;
+
                 case "split_data":
                     processSplitData(data)
                     break;
@@ -227,6 +233,13 @@ function processReception(data) {
                         processReception(resultData)
                     })
                     break
+
+                case BackendConst.SERVICE_TYPE_PACKET_BONDING: //TODO: Test case
+                    const bondArray = JSON.parse(data[BackendConst.KEY_PACKET_BONDING_ARRAY])
+                    for(let obj in bondArray) {
+                        processReception(JSON.parse(obj))
+                    }
+                    break;
 
                 default:
                     if(type.startsWith("send") || type.startsWith("reception")) {

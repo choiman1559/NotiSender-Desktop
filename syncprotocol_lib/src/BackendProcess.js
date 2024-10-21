@@ -3,6 +3,9 @@ const {getAuth} = require("firebase/auth");
 
 class BackendConst {
     static SERVICE_TYPE_PACKET_PROXY = "type_packet_proxy"
+    static SERVICE_TYPE_PACKET_BONDING = "type_packet_bonding"
+    static SERVICE_TYPE_LIVE_NOTIFICATION = "type_live_notification"
+
     static REQUEST_POST_SHORT_TERM_DATA = "request_post_short_term_data"
     static REQUEST_GET_SHORT_TERM_DATA = "request_get_short_term_data"
 
@@ -14,6 +17,7 @@ class BackendConst {
     static KEY_SEND_DEVICE_ID = "send_device_id"
     static KEY_SEND_DEVICE_NAME = "send_device_name"
     static KEY_IS_SUCCESS = "is_success"
+    static KEY_PACKET_BONDING_ARRAY = "packet_bonding_array";
 
     static KEY_ACTION_TYPE = "action_type"
     static KEY_UID = "uid"

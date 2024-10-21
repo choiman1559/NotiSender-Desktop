@@ -1,5 +1,6 @@
 class PairAction {
     onFindRequest() {}
+    onLiveNotification(map) {}
     onActionRequested(map) {}
     onDataRequested(map) {}
     showPairChoiceAction(device) {}
