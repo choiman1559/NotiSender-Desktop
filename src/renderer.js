@@ -41,9 +41,10 @@ const {
     EVENT_TYPE
 } = require("syncprotocol/src/Listener");
 const { Device } = require("syncprotocol/src/Device");
-const { DeviceType, DEVICE_TYPE_UNKNOWN } = require("syncprotocol/src/DeviceType");
+const { DeviceType, DEVICE_TYPE_UNKNOWN, DEVICE_TYPE_PHONE, DEVICE_TYPE_TABLET, DEVICE_TYPE_DESKTOP, DEVICE_TYPE_LAPTOP} = require("syncprotocol/src/DeviceType");
 const { postRestApi } = require("syncprotocol/src/PostRequset");
 const {NotificationData} = require("./NotificationData");
+const {onLiveNotificationDialogUp} = require("./liveNoi/liveNotiDialog")
 
 const taskSelect = getElement('TaskSelection')
 const deviceSelect = getElement("DeviceSelection")
@@ -64,6 +65,8 @@ const emptyDeviceList = getElement("emptyDeviceList")
 const pairModalList = getElement("pairModalList")
 const pairModal = getElement("pairModal")
 const pairProgress = getElement("pairProgress")
+const liveNotificationAction = getElement("liveNotificationAction")
+const liveNotificationModal = getElement("liveNotificationModal")
 
 const deviceDetailPrefsContainer = getElement("deviceDetailPrefsContainer")
 const remoteServiceToggle = getElement("remoteServiceToggle")
@@ -232,6 +235,31 @@ function onTaskSelected() {
 
 function onDeviceSelected() {
     SubmitButton.disabled = (taskSelect.value === "0" || deviceSelect.value === "0")
+
+    if(deviceSelect.value !== "0") {
+        const selectedDevice = deviceList[deviceSelect.selectedIndex - 1]
+        switch (selectedDevice.deviceType.DEVICE_TYPE) {
+            case DEVICE_TYPE_PHONE:
+            case DEVICE_TYPE_TABLET:
+                liveNotificationAction.disabled = false
+                break;
+
+            case DEVICE_TYPE_DESKTOP:
+            case DEVICE_TYPE_LAPTOP:
+                liveNotificationAction.disabled = true
+                //TODO: Implement Remote file Explorer
+                break;
+
+            default:
+                liveNotificationAction.disabled = true
+                break;
+        }
+    } else liveNotificationAction.disabled = true
+}
+
+function showLiveNotificationDialog() {
+    const selectedDevice = deviceList[deviceSelect.selectedIndex - 1];
+    onLiveNotificationDialogUp(selectedDevice).then(r => { })
 }
 
 function onClickSubmit() {
@@ -430,6 +458,7 @@ function onModalCloseClick() {
     pairModal.style.display = "none"
     notificationDetailModal.style.display = "none"
     loginTokenExpireModal.style.display = "none"
+    liveNotificationModal.style.display = "none"
 }
 
 window.onclick = function (event) {

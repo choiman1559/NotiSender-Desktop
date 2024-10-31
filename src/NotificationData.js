@@ -27,9 +27,10 @@ class NotificationData {
         data.bigPicture = obj.bigPicture
 
         data.actions = []
-        let actionArray = JSON.parse(obj.actions)
-        for(let actionRawItem in actionArray) {
-            data.actions.push(NotificationAction.parseFrom(actionRawItem))
+        if(obj.actions.length > 0) {
+            for(let actionRawItem of obj.actions) {
+                data.actions.push(NotificationAction.parseFrom(actionRawItem))
+            }
         }
 
         return data

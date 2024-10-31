@@ -48,7 +48,7 @@ function responseLiveNotiData(map) {
     const sendDeviceName = map[BackendConst.KEY_DEVICE_NAME]
     const sendDeviceId = map[BackendConst.KEY_DEVICE_ID]
 
-    if(uniqueIdMap == null || !uniqueIdMap.containsKey(map.get(BackendConst.KEY_DEVICE_ID))) {
+    if(uniqueIdMap == null || !uniqueIdMap.has(map[BackendConst.KEY_DEVICE_ID])) {
         return;
     }
 
@@ -62,14 +62,18 @@ function responseLiveNotiData(map) {
     serverBody[BackendConst.KEY_SEND_DEVICE_ID] = sendDeviceId
     serverBody[BackendConst.KEY_SEND_DEVICE_NAME] = sendDeviceName
 
-    if("true".equals(map[BackendConst.KEY_IS_SUCCESS])) {
+    if("true" === map[BackendConst.KEY_IS_SUCCESS]) {
         BackendProcess.sendPacket(BackendConst.SERVICE_TYPE_LIVE_NOTIFICATION, serverBody, (result) => {
             if(result.isResultOk()) {
                 const notificationList = new ArrayList();
-                const notificationArray = result.getExtraData();
+                const notificationArray = JSON.parse(result.getExtraData());
+                console.log(notificationArray)
 
-                for(let notificationRaw in notificationArray) {
-                    notificationList.add(NotificationData.parseFrom(notificationRaw))
+                if(notificationArray.length > 0) {
+                    for(let notificationRaw of notificationArray) {
+                        console.log(notificationRaw)
+                        notificationList.add(NotificationData.parseFrom(notificationRaw))
+                    }
                 }
 
                 if(resultCallback != null) {
