@@ -58,7 +58,7 @@ class SplitDataObject extends Object {
 }
 
 function onMessageReceived(data) {
-    console.log(data)
+    if (global.globalOption.printDebugLog) console.log(data)
     if(data.topic !== global.globalOption.pairingKey) return;
 
     if(data.encryptedData != null || data.encryptedData !== undefined) {
@@ -135,7 +135,7 @@ function processReception(data) {
     const type = data.type
     const device = new Device(data.device_name, data.device_id)
     if(data.device_type != null) device.deviceType = data.device_type
-    if (global.globalOption.printDebugLog) console.log(type + " " + device.toString())
+    if (global.globalOption.printDebugLog) console.log(type + " " + device.toString(), data)
 
     if (type != null && global.globalOption.pairingKey !== "") {
         if (!isDeviceItself(data)) {
@@ -149,7 +149,6 @@ function processReception(data) {
                         responseDeviceInfoToFinder(device)
                     }
                     break;
-
 
                 case "pair|response_device_list":
                     //Request Device Action
@@ -234,10 +233,10 @@ function processReception(data) {
                     })
                     break
 
-                case BackendConst.SERVICE_TYPE_PACKET_BONDING: //TODO: Test case
+                case BackendConst.SERVICE_TYPE_PACKET_BONDING:
                     const bondArray = JSON.parse(data[BackendConst.KEY_PACKET_BONDING_ARRAY])
-                    for(let obj in bondArray) {
-                        processReception(JSON.parse(obj))
+                    for(let obj of bondArray) {
+                        processReception(obj)
                     }
                     break;
 

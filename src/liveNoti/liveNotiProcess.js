@@ -67,11 +67,9 @@ function responseLiveNotiData(map) {
             if(result.isResultOk()) {
                 const notificationList = new ArrayList();
                 const notificationArray = JSON.parse(result.getExtraData());
-                console.log(notificationArray)
 
                 if(notificationArray.length > 0) {
                     for(let notificationRaw of notificationArray) {
-                        console.log(notificationRaw)
                         notificationList.add(NotificationData.parseFrom(notificationRaw))
                     }
                 }
@@ -90,5 +88,6 @@ function responseLiveNotiData(map) {
 
 module.exports = {
     processLiveNoti,
-    requestLiveNotiData
+    requestLiveNotiData,
+    REQUEST_NOTIFICATION_ACTION
 }

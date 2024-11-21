@@ -20,7 +20,7 @@ const firebaseCredential = require("./credential/service-account.json");
 const firebaseHttpCredential = require("./credential/firebase-credential.json");
 const fs = require("fs");
 const {NotificationData} = require("./NotificationData");
-const {processLiveNoti} = require("./liveNoi/liveNotiProcess");
+const {processLiveNoti} = require("./liveNoti/liveNotiProcess");
 
 const store = new Store()
 function getPreferenceValue(key, defValue) {
@@ -276,9 +276,16 @@ ipcRenderer.on("download_complete", (_, file) => {
     })
 });
 
+let lastReceivedNotification = null;
 function sendNotification(map) {
     const notificationData = NotificationData.parseFrom(map.notification_data);
     if(global.globalOption.printDebugLog) console.log(notificationData)
+
+    if(lastReceivedNotification == null) {
+        lastReceivedNotification = notificationData
+    } else if(lastReceivedNotification === notificationData) {
+        return;
+    }
 
     function isIconBlank(icon) {
         return icon === undefined || icon === "" || icon === "none"
@@ -311,7 +318,9 @@ ipcRenderer.on("notification_image_saved", (_, map, image) => {
     })
 
     notification.onshow = () => {
-        fs.rmSync(image)
+        if(fs.existsSync(image)) {
+            fs.rmSync(image)
+        }
     }
 
     notification.onclick = () => {

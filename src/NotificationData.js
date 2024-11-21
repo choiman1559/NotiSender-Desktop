@@ -1,3 +1,5 @@
+const {decompressString} = require("syncprotocol/src/AESCrypto");
+
 class NotificationData {
     postTime;
     key;
@@ -56,7 +58,12 @@ class NotificationAction {
     }
 }
 
+async function getPicture(object) {
+    return await decompressString(object)
+}
+
 module.exports = {
     NotificationData,
-    NotificationAction
+    NotificationAction,
+    getPicture
 }

@@ -44,7 +44,7 @@ const { Device } = require("syncprotocol/src/Device");
 const { DeviceType, DEVICE_TYPE_UNKNOWN, DEVICE_TYPE_PHONE, DEVICE_TYPE_TABLET, DEVICE_TYPE_DESKTOP, DEVICE_TYPE_LAPTOP} = require("syncprotocol/src/DeviceType");
 const { postRestApi } = require("syncprotocol/src/PostRequset");
 const {NotificationData} = require("./NotificationData");
-const {onLiveNotificationDialogUp} = require("./liveNoi/liveNotiDialog")
+const {onLiveNotificationDialogUp} = require("./liveNoti/liveNotiDialog")
 
 const taskSelect = getElement('TaskSelection')
 const deviceSelect = getElement("DeviceSelection")
@@ -259,7 +259,7 @@ function onDeviceSelected() {
 
 function showLiveNotificationDialog() {
     const selectedDevice = deviceList[deviceSelect.selectedIndex - 1];
-    onLiveNotificationDialogUp(selectedDevice).then(r => { })
+    onLiveNotificationDialogUp(selectedDevice).then(_ => { })
 }
 
 function onClickSubmit() {
