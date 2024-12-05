@@ -301,6 +301,16 @@ function registerNotification(map, notificationData, notification) {
     if(!store.get("useRemoteDismiss", true)) return
     let key = notificationData.key
 
+    removeObsolete : if(currentNotificationMap.has(key)) {
+        let notification = currentNotificationMap.get(key)
+        if(notification === undefined) {
+            break removeObsolete
+        }
+
+        notification.close()
+        currentNotificationMap.delete(key)
+    }
+
     notification.onclose = () => {
         let data = {
             "type": "reception|normal",

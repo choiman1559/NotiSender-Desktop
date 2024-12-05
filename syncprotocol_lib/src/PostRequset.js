@@ -3,8 +3,9 @@ const {encodeMac, generateTokenIdentifier} = require("./HmacCrypto");
 const {google} = require("googleapis");
 const ArrayList = require("arraylist-js");
 const {BackendProcess, BackendConst} = require("./BackendProcess");
+const {PacketBonding} = require("./PacketBonding");
 
-function postRestApi(data) {
+function postRestApi(data, notUseProxyBonding= false) {
     let head = {
         "topic": global.globalOption.pairingKey,
         "android": {"priority": "high"},
@@ -12,7 +13,7 @@ function postRestApi(data) {
     }
 
     let macIdentifier = generateTokenIdentifier(global.globalOption.identifierValue, global.globalOption.deviceName);
-    let useHmac;
+    let useHmac
 
     switch (data.type) {
         case "pair|request_device_list":
@@ -20,17 +21,25 @@ function postRestApi(data) {
         case "pair|response_device_list":
         case "pair|accept_pair":
             useHmac = false;
+            notUseProxyBonding = true;
             break;
         default:
             useHmac = global.globalOption.authWithHMac;
             break;
     }
 
+    if (!notUseProxyBonding) {
+        PacketBonding.runBondingSchedule(data, (bondingPacket) => {
+            postRestApi(bondingPacket, true)
+        })
+        return;
+    }
+
     if ((global.globalOption.encryptionEnabled && global.globalOption.encryptionPassword !== "") || global.globalOption.alwaysEncrypt) {
         let password;
-        if(global.globalOption.encryptionEnabled) {
+        if (global.globalOption.encryptionEnabled) {
             password = global.globalOption.encryptionPassword;
-        } else if(global.globalOption.alwaysEncrypt) {
+        } else if (global.globalOption.alwaysEncrypt) {
             password = Buffer.from(global.globalOption.userEmail, 'utf-8').toString('base64')
         }
 
@@ -77,15 +86,15 @@ function postRestApi(data) {
 function cleanUpAndPostData(head) {
     let dataToSend = {}
     const keyList = Object.keys(head.data)
-    for(let keyIndex in keyList) {
+    for (let keyIndex in keyList) {
         dataToSend[keyList[keyIndex]] = head.data[keyList[keyIndex]] + ""
     }
 
     const stringifyData = JSON.stringify(dataToSend)
     const dataHash = getStringHash(stringifyData)
-    if(stringifyData.length > 1024 || global.globalOption.enforceBackendProxy) {
+    if (global.globalOption.enforceBackendProxy || stringifyData.length > 1024) {
         BackendProcess.postProxy(dataToSend, dataHash, (success) => {
-            if(success) {
+            if (success) {
                 let proxyMetadata = {};
                 proxyMetadata[BackendConst.KEY_DEVICE_NAME] = global.globalOption.deviceName
                 proxyMetadata[BackendConst.KEY_DEVICE_ID] = global.globalOption.identifierValue
@@ -105,8 +114,8 @@ function cleanUpAndPostData(head) {
 }
 
 function postRestApiWithTopic(head) {
-    if(head.message.data.encryptedData !== undefined) {
-        if(global.selfReceiveDataHash == null) {
+    if (head.message.data.encryptedData !== undefined) {
+        if (global.selfReceiveDataHash == null) {
             global.selfReceiveDataHash = new ArrayList();
         }
 
@@ -114,7 +123,7 @@ function postRestApiWithTopic(head) {
     }
 
     getGoogleAccessToken().then((resolve, _) => {
-        if(resolve != null) {
+        if (resolve != null) {
             const serverKey = "Bearer " + resolve
             const FCM_API = "https://fcm.googleapis.com/v1/projects/notisender-41c1b/messages:send";
             const contentType = "application/json; UTF-8";
@@ -137,7 +146,7 @@ function postRestApiWithTopic(head) {
 }
 
 function getGoogleAccessToken() {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         const key = global.globalOption.serverCredential
         const jwtClient = new google.auth.JWT(
             key.client_email,
@@ -147,7 +156,7 @@ function getGoogleAccessToken() {
             null
         );
 
-        jwtClient.authorize(function(err, tokens) {
+        jwtClient.authorize(function (err, tokens) {
             if (err) {
                 reject(err);
                 return;

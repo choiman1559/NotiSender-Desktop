@@ -6,11 +6,12 @@
   "license": "LGPL-2.1",
   "type": "commonjs",
   "dependencies": {
+    "@cuj1559/electron-push-receiver": "^3.1.8",
     "arraylist-js": "^1.1.0",
     "electron": "^32.0.2",
-    "@cuj1559/electron-push-receiver": "^3.1.8",
     "electron-store": "^8.1.0",
     "google-auth-library": "^8.8.0",
-    "googleapis": "^118.0.0"
+    "googleapis": "^118.0.0",
+    "node-schedule": "^2.1.1"
   }
 }
