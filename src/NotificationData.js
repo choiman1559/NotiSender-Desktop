@@ -1,5 +1,20 @@
 const {decompressString} = require("syncprotocol/src/AESCrypto");
 
+//noinspection JSUnusedLocalSymbols, JSUnusedGlobalSymbols
+class NotificationApiConst {
+    static PREFIX_KEY_NOTIFICATION = "notification_";
+    static KEY_NOTIFICATION_API = this.PREFIX_KEY_NOTIFICATION + "api";
+    static KEY_NOTIFICATION_DATA = this.PREFIX_KEY_NOTIFICATION + "data";
+    static KEY_NOTIFICATION_KEY = this.PREFIX_KEY_NOTIFICATION + "key";
+
+    static KEY_NOTIFICATION_ACTION_INDEX = this.PREFIX_KEY_NOTIFICATION + "action_index";
+    static KEY_NOTIFICATION_HASHCODE = this.PREFIX_KEY_NOTIFICATION + "hashcode";
+
+    static KEY_NOTIFICATION_HAS_INPUT = this.PREFIX_KEY_NOTIFICATION + "has_input";
+    static KEY_NOTIFICATION_KEY_INPUT = this.PREFIX_KEY_NOTIFICATION + "key_input";
+    static KEY_NOTIFICATION_DATA_INPUT = this.PREFIX_KEY_NOTIFICATION + "data_input";
+}
+
 class NotificationData {
     postTime;
     key;
@@ -63,6 +78,7 @@ async function getPicture(object) {
 }
 
 module.exports = {
+    NotificationApiConst,
     NotificationData,
     NotificationAction,
     getPicture

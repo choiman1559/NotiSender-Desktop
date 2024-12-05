@@ -89,6 +89,7 @@ const showAlreadyConnected = getElement("showAlreadyConnected")
 const allowRemovePairRemotely = getElement("allowRemovePairRemotely")
 const startWhenBoot = getElement("startWhenBoot")
 const enforceBackendProxy = getElement("enforceBackendProxy")
+const useRemoteDismiss = getElement("useRemoteDismiss")
 
 const version = getElement("version")
 const LoginInfoDetail = getElement("LoginInfoDetail")
@@ -233,6 +234,7 @@ function onTaskSelected() {
     }
 }
 
+// noinspection JSUnusedLocalSymbols
 function onDeviceSelected() {
     SubmitButton.disabled = (taskSelect.value === "0" || deviceSelect.value === "0")
 
@@ -257,11 +259,13 @@ function onDeviceSelected() {
     } else liveNotificationAction.disabled = true
 }
 
+// noinspection JSUnusedLocalSymbols
 function showLiveNotificationDialog() {
     const selectedDevice = deviceList[deviceSelect.selectedIndex - 1];
     onLiveNotificationDialogUp(selectedDevice).then(_ => { })
 }
 
+// noinspection JSUnusedLocalSymbols
 function onClickSubmit() {
     let isArgs1Visible = Args1Form.style.display === "block"
     let isArgs2Visible = Args2Form.style.display === "block"
@@ -389,14 +393,17 @@ function onDeviceItemClick(index) {
     })
 }
 
+// noinspection JSUnusedLocalSymbols
 function onFileSelect() {
     ipcRenderer.send("file_select_dialog")
 }
 
+// noinspection JSUnusedLocalSymbols
 function onFindButtonClick() {
     sendFindTargetDesignatedNotification(modalSelectedDevice)
 }
 
+// noinspection JSUnusedLocalSymbols
 function onForgetButtonClick() {
     removePairedDevice(modalSelectedDevice)
     requestRemovePair(modalSelectedDevice)
@@ -404,6 +411,7 @@ function onForgetButtonClick() {
     loadDeviceList()
 }
 
+// noinspection JSUnusedLocalSymbols
 function onAddButtonClick() {
     if (getPreferenceValue("login_token", "") === "") {
         createToastNotification('Please login first', 'Okay')
@@ -494,6 +502,7 @@ showAlreadyConnected.checked = getPreferenceValue("showAlreadyConnected", false)
 allowRemovePairRemotely.checked = getPreferenceValue("allowRemovePairRemotely", true)
 startWhenBoot.checked = getPreferenceValue("startWhenBoot", true)
 enforceBackendProxy.checked = getPreferenceValue("enforceBackendProxy", false)
+useRemoteDismiss.checked = getPreferenceValue("useRemoteDismiss", true)
 
 showPassword.addEventListener("click", function () {
     this.classList.toggle("fa-eye-slash")
@@ -510,6 +519,7 @@ dataSetChangeListener.on("notificationToggle", function (value) {
     }
 })
 
+// noinspection JSUnusedLocalSymbols
 function onValueChanged(id, type) {
     store.set(id, type === "checked" ? getElement(id).checked : getElement(id).value)
     changeOption()
@@ -550,6 +560,7 @@ function initAuth() {
     }
 }
 
+// noinspection JSUnusedLocalSymbols
 function onRefreshAuth() {
     onAuth()
     onModalCloseClick()

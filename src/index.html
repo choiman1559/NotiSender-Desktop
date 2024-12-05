@@ -231,13 +231,6 @@
                     <span class="mdl-switch__label">Always encrypt data</span>
                 </label>
 
-                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="allowOnlyPaired"
-                       style="margin-top: 8px">
-                    <input type="checkbox" id="allowOnlyPaired" class="mdl-switch__input"
-                           onchange="onValueChanged('allowOnlyPaired','checked')">
-                    <span class="mdl-switch__label">Allow only paired device</span>
-                </label>
-
                 <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="useHMAC"
                        style="margin-top: 8px">
                     <input type="checkbox" id="useHMAC" class="mdl-switch__input"
@@ -245,11 +238,27 @@
                     <span class="mdl-switch__label">Check data integrity using HMAC</span>
                 </label>
 
+                <hr>
+
+                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="allowOnlyPaired"
+                       style="margin-top: 8px">
+                    <input type="checkbox" id="allowOnlyPaired" class="mdl-switch__input"
+                           onchange="onValueChanged('allowOnlyPaired','checked')">
+                    <span class="mdl-switch__label">Allow only paired device</span>
+                </label>
+
                 <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="enforceBackendProxy"
                        style="margin-top: 8px">
                     <input type="checkbox" id="enforceBackendProxy" class="mdl-switch__input"
                            onchange="onValueChanged('enforceBackendProxy','checked')">
                     <span class="mdl-switch__label">Enforce backend proxy</span>
+                </label>
+
+                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="useRemoteDismiss"
+                       style="margin-top: 8px">
+                    <input type="checkbox" id="useRemoteDismiss" class="mdl-switch__input"
+                           onchange="onValueChanged('useRemoteDismiss','checked')">
+                    <span class="mdl-switch__label">Notification remote dismiss</span>
                 </label>
 
                 <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="deadlineTime"
@@ -316,6 +325,7 @@
                 border: 1px solid #888;
             }
 
+            /*noinspection CssUnusedSymbol*/
             .device_icon_background {
                 width: 40px;
                 height: 40px;
@@ -327,6 +337,7 @@
                 background-color: #757575;
             }
 
+            /*noinspection CssUnusedSymbol*/
             .device_icon_text {
                 transform: translate(-50%, -50%);
                 position: absolute;
@@ -479,7 +490,7 @@
     </main>
 </div>
 
-<script src="renderer.js"></script>
+<script src="./renderer.js"></script>
 </body>
 
 </html>

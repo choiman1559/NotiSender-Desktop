@@ -19,8 +19,10 @@ const firebaseConfig = require("./credential/firebase-config.json");
 const firebaseCredential = require("./credential/service-account.json");
 const firebaseHttpCredential = require("./credential/firebase-credential.json");
 const fs = require("fs");
-const {NotificationData} = require("./NotificationData");
+const {NotificationData, NotificationApiConst} = require("./NotificationData");
 const {processLiveNoti} = require("./liveNoti/liveNotiProcess");
+const {BackendConst} = require("syncprotocol/src/BackendProcess");
+const {postRestApi} = require("syncprotocol/src/PostRequset");
 
 const store = new Store()
 function getPreferenceValue(key, defValue) {
@@ -248,6 +250,22 @@ class Actions extends PairAction {
                 }
                 break;
 
+            case "send|dismiss":
+                if(store.get("useRemoteDismiss", true)
+                    || map[NotificationApiConst.KEY_NOTIFICATION_API] === undefined) {
+                    return;
+                }
+
+                let key = map[NotificationApiConst.KEY_NOTIFICATION_KEY]
+                if(key != null && key !== '' && currentNotificationMap != null
+                    && currentNotificationMap.size > 0 && currentNotificationMap.has(key)) {
+
+                    let notification = currentNotificationMap.get(key)
+                    notification.close()
+                    currentNotificationMap.delete(key)
+                }
+                break;
+
             case "media|meta_data":
                 if(getPreferenceValue("media", false)) {
                     //TODO: implement media sync
@@ -276,7 +294,30 @@ ipcRenderer.on("download_complete", (_, file) => {
     })
 });
 
+const currentNotificationMap = new Map();
 let lastReceivedNotification = null;
+
+function registerNotification(map, notificationData, notification) {
+    if(!store.get("useRemoteDismiss", true)) return
+    let key = notificationData.key
+
+    notification.onclose = () => {
+        let data = {
+            "type": "reception|normal",
+            "start_remote_activity": false
+        }
+
+        data[NotificationApiConst.KEY_NOTIFICATION_KEY] = key
+        data[BackendConst.KEY_UID] = global.globalOption.pairingKey;
+        data[BackendConst.KEY_DEVICE_NAME] = global.globalOption.deviceName
+        data[BackendConst.KEY_DEVICE_ID] = global.globalOption.identifierValue
+        data[BackendConst.KEY_SEND_DEVICE_NAME] = map[BackendConst.KEY_DEVICE_NAME]
+        data[BackendConst.KEY_SEND_DEVICE_ID] = map[BackendConst.KEY_DEVICE_ID]
+        postRestApi(data)
+    }
+    currentNotificationMap.set(key, notification)
+}
+
 function sendNotification(map) {
     const notificationData = NotificationData.parseFrom(map.notification_data);
     if(global.globalOption.printDebugLog) console.log(notificationData)
@@ -302,6 +343,7 @@ function sendNotification(map) {
         notification.onclick = () => {
             ipcRenderer.send("notification_detail", map)
         }
+        registerNotification(map, notificationData, notification)
     } else {
         ipcRenderer.send("notification_image_required", map)
     }
@@ -326,6 +368,7 @@ ipcRenderer.on("notification_image_saved", (_, map, image) => {
     notification.onclick = () => {
         ipcRenderer.send("notification_detail", map)
     }
+    registerNotification(map, notificationData, notification)
 });
 
 function sendSmsNotification(map) {
