@@ -302,12 +302,13 @@ function registerNotification(map, notificationData, notification) {
     let key = notificationData.key
 
     removeObsolete : if(currentNotificationMap.has(key)) {
-        let notification = currentNotificationMap.get(key)
-        if(notification === undefined) {
+        let oldNotification = currentNotificationMap.get(key)
+        if(oldNotification === undefined) {
             break removeObsolete
         }
 
-        notification.close()
+        oldNotification.onclose = {}
+        oldNotification.close()
         currentNotificationMap.delete(key)
     }
 
