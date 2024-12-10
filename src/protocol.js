@@ -261,6 +261,7 @@ class Actions extends PairAction {
                     && currentNotificationMap.size > 0 && currentNotificationMap.has(key)) {
 
                     let notification = currentNotificationMap.get(key)
+                    notification.onclose = () => {}
                     notification.close()
                     currentNotificationMap.delete(key)
                 }
@@ -307,7 +308,7 @@ function registerNotification(map, notificationData, notification) {
             break removeObsolete
         }
 
-        oldNotification.onclose = {}
+        oldNotification.onclose = () => {}
         oldNotification.close()
         currentNotificationMap.delete(key)
     }
@@ -324,7 +325,9 @@ function registerNotification(map, notificationData, notification) {
         data[BackendConst.KEY_DEVICE_ID] = global.globalOption.identifierValue
         data[BackendConst.KEY_SEND_DEVICE_NAME] = map[BackendConst.KEY_DEVICE_NAME]
         data[BackendConst.KEY_SEND_DEVICE_ID] = map[BackendConst.KEY_DEVICE_ID]
+
         postRestApi(data)
+        currentNotificationMap.delete(key)
     }
     currentNotificationMap.set(key, notification)
 }

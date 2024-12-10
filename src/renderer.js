@@ -6,6 +6,7 @@ const {
 
 const fs = require('fs');
 const ipcRenderer = require("electron").ipcRenderer;
+const webUtils = require("electron").webUtils
 const path = require("path");
 const Store = require('electron-store');
 const store = new Store();
@@ -727,9 +728,9 @@ document.addEventListener('drop', (event) => {
             createToastNotification("Only one file can be transferred at a time.", "Okay")
         }
 
-        const draggedFile = event.dataTransfer.files[0].path
-
+        const draggedFile = webUtils.getPathForFile(event.dataTransfer.files[0])
         lastSelectedFilePath = draggedFile
+
         let fileFoo = draggedFile.split(draggedFile.indexOf("\\") > -1 ? "\\" : "/")
         Args3EditText.value = fileFoo[fileFoo.length - 1]
         setEditTextDirty(3)

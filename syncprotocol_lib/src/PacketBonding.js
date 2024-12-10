@@ -36,8 +36,8 @@ class PacketBonding {
             bondingPacket[BackendConst.KEY_DEVICE_NAME] = global.globalOption.deviceName
             bondingPacket[BackendConst.KEY_DEVICE_ID] = global.globalOption.identifierValue
             this.scheduleCompletedCallback(bondingPacket)
-        } else {
-            this.scheduleCompletedCallback(this.packetList.list[0])
+        } else if(this.packetList.size() === 1){
+            this.scheduleCompletedCallback(this.packetList.last())
         }
         this.packetList.clear()
     }

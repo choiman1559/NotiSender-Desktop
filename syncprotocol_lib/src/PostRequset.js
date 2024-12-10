@@ -15,7 +15,7 @@ function postRestApi(data, notUseProxyBonding= false) {
     let macIdentifier = generateTokenIdentifier(global.globalOption.identifierValue, global.globalOption.deviceName);
     let useHmac
 
-    switch (data.type) {
+    if(data.type !== undefined) switch (data.type) {
         case "pair|request_device_list":
         case "pair|request_pair":
         case "pair|response_device_list":
@@ -26,6 +26,9 @@ function postRestApi(data, notUseProxyBonding= false) {
         default:
             useHmac = global.globalOption.authWithHMac;
             break;
+    } else {
+        console.log("Unknown packet type: ", data)
+        return;
     }
 
     if (!notUseProxyBonding) {

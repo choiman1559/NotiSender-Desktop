@@ -58,7 +58,6 @@ class SplitDataObject extends Object {
 }
 
 function onMessageReceived(data) {
-    if (global.globalOption.printDebugLog) console.log(data)
     if(data.topic !== global.globalOption.pairingKey) return;
 
     if(data.encryptedData != null || data.encryptedData !== undefined) {
@@ -70,6 +69,7 @@ function onMessageReceived(data) {
     }
 
     if (data.encrypted === "true") {
+        if (global.globalOption.printDebugLog) console.log("Processing encrypted data: ", data)
         if ((global.globalOption.encryptionEnabled && global.globalOption.encryptionPassword != null) || global.globalOption.alwaysEncrypt) {
             let password;
             if(global.globalOption.encryptionEnabled) {
