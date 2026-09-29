@@ -1,7 +1,7 @@
 {
   "name": "noti_sender",
   "productName": "NotiSender",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "",
   "main": "./src/main.js",
   "scripts": {
@@ -15,8 +15,8 @@
   "license": "LGPL-2.1",
   "devDependencies": {
     "@web/dev-server": "^0.1.35",
-    "electron": "32.0.2",
-    "electron-builder": "^24.13.1"
+    "electron": "^44.4.5",
+    "electron-builder": "^26.17.0"
   },
   "dependencies": {
     "@getstation/electron-google-oauth2": "^2.1.0",

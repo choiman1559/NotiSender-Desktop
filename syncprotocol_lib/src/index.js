@@ -32,38 +32,65 @@ function initialize(option, action) {
     global.thisDeviceType = getThisDeviceType()
     Listener.init()
 
-    function initFcmToken(token) {
+    function initFcmToken(projectId, token) {
         global.deviceToken = token;
-        getGoogleAccessToken().then((resolve, _) => {
-            if (resolve != null) {
-                if (global.globalOption.printDebugLog) console.log('service successfully started\nOAuth: ', resolve)
-                fetch('https://iid.googleapis.com/iid/v1/' + token + '/rel/topics/' + global.globalOption.pairingKey, {
-                    method: 'POST',
-                    headers: new Headers({
-                        'Authorization': 'Bearer ' + resolve,
-                        "Content-Type": "application/json; UTF-8",
-                        "access_token_auth": true
-                    })
-                }).then(response => {
-                    if (response.status < 200 || response.status >= 400) {
-                        throw 'Error subscribing to topic: ' + response.status + ' - ' + response.text();
+
+        getGoogleAccessToken().then((accessToken) => {
+            if (accessToken != null) {
+                if (global.globalOption.printDebugLog) {
+                    console.log('service successfully started\nOAuth: ', accessToken);
+                }
+
+                const topic = encodeURIComponent(global.globalOption.pairingKey);
+                const registration = encodeURIComponent(token);
+                const project = encodeURIComponent(projectId);
+
+                fetch(
+                    'https://fcm.googleapis.com/v1/projects/' + project + '/registrations/' + registration + '/topicSubscriptions?topic_name=' + topic,
+                    {
+                        method: 'POST',
+                        headers: new Headers({
+                            'Authorization': 'Bearer ' + accessToken,
+                            'Content-Type': 'application/json'
+                        }),
+                        body: '{}'
                     }
-                    if (global.globalOption.printDebugLog) console.log('Subscribed to "' + global.globalOption.pairingKey + '"');
-                }).catch(error => {
-                    if (global.globalOption.printDebugLog) console.error(error);
-                })
+                ).then(async (response) => {
+                    const responseBody = await response.text();
+                    if (response.status !== 409 && (response.status < 200 || response.status >= 300)) {
+                        throw new Error('Error subscribing to topic: ' + response.status + ' - ' + responseBody);
+                    }
+
+                    if (global.globalOption.printDebugLog) {
+                        console.log(
+                            response.status === 409
+                                ? 'Already subscribed to "' + global.globalOption.pairingKey + '"'
+                                : 'Subscribed to "' + global.globalOption.pairingKey + '"'
+                        );
+                    }
+                }).catch((error) => {
+                    if (global.globalOption.printDebugLog) {
+                        console.error(error);
+                    }
+                });
             }
-        })
+        }).catch((error) => {
+            if (global.globalOption.printDebugLog) {
+                console.error(error);
+            }
+        });
     }
 
     if (global.globalOption.printDebugLog) console.log('starting service and registering a client')
-    if(!isListenerRegistered) {
+    let firebaseHttpCredential = global.globalOption.firebaseHttpCredential
+
+    if (!isListenerRegistered) {
         ipcRenderer.on(NOTIFICATION_SERVICE_STARTED, (_, token) => {
-            initFcmToken(token)
+            initFcmToken(firebaseHttpCredential.projectID, token)
         })
 
         ipcRenderer.on(NOTIFICATION_SERVICE_RESTARTED, (_, token) => {
-            initFcmToken(token)
+            initFcmToken(firebaseHttpCredential.projectID, token)
         })
 
         ipcRenderer.on(NOTIFICATION_SERVICE_ERROR, (_, error) => {
@@ -81,7 +108,6 @@ function initialize(option, action) {
             if (global.globalOption.enabled) onMessageReceived(serverNotificationPayload.data)
         })
 
-        let firebaseHttpCredential = global.globalOption.firebaseHttpCredential
         ipcRenderer.send(START_NOTIFICATION_SERVICE,
             firebaseHttpCredential.appID,
             firebaseHttpCredential.projectID,
@@ -90,12 +116,13 @@ function initialize(option, action) {
         )
 
         isListenerRegistered = true
-    } else if(global.globalOption.pairingKey !== lastPairingKey) {
-        initFcmToken(global.deviceToken)
+    } else if (global.globalOption.pairingKey !== lastPairingKey) {
+        initFcmToken(firebaseHttpCredential.projectID, global.deviceToken)
         lastPairingKey = global.globalOption.pairingKey
     }
 }
 
+// noinspection JSUnusedGlobalSymbols
 module.exports = {
     initialize, setConnectionOption
 };
