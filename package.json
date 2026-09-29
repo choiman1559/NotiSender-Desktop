@@ -1,7 +1,7 @@
 {
   "name": "noti_sender",
   "productName": "NotiSender",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "",
   "main": "./src/main.js",
   "scripts": {
@@ -64,7 +64,7 @@
           ]
         }
       ],
-      "icon": "./src/res/icon.icns"
+      "icon": "./src/res/icon.png"
     },
     "nsis": {
       "oneClick": false,
